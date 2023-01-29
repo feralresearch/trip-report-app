@@ -5,7 +5,6 @@ import PlayerList from "../components/PlayerList";
 import Gallery from "../components/Gallery";
 import MediaList from "../components/MediaList";
 import styles from "./styles";
-import { set } from "immer/dist/internal";
 import Spinner from "../components/Spinner";
 
 const Instance = () => {
