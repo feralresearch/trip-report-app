@@ -10,7 +10,7 @@
     "url": "https://theplacelab.com"
   },
   "engines": {
-    "node": ">=18.13.0"
+    "node": "=16.15"
   },
   "main": "packages/main/dist/index.cjs",
   "scripts": {
@@ -24,7 +24,8 @@
     "test:main": "vitest run -r packages/main --passWithNoTests",
     "test:preload": "vitest run -r packages/preload --passWithNoTests",
     "test:renderer": "vitest run -r packages/renderer --passWithNoTests",
-    "watch": "node scripts/watch.mjs 2>&1| grep -v 'CoreText note:'",
+    "watch": "node scripts/watch.mjs",
+    "watchMac": "node scripts/watch.mjs 2>&1| grep -v 'CoreText note:'",
     "lint": "eslint . --ext js,mjs,cjs,ts,mts,cts,vue",
     "typecheck:main": "tsc --noEmit -p packages/main/tsconfig.json",
     "typecheck:preload": "tsc --noEmit -p packages/preload/tsconfig.json",
@@ -41,7 +42,7 @@
     "@types/tmp": "^0.2.3",
     "@typescript-eslint/eslint-plugin": "5.48.1",
     "cross-env": "7.0.3",
-    "electron": "22.0.2",
+    "electron": "20.2",
     "electron-builder": "23.6.0",
     "eslint": "8.31.0",
     "eslint-plugin-vue": "9.9.0",

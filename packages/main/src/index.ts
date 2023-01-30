@@ -35,6 +35,7 @@ app
   .whenReady()
   .then(async () => {
     const window = await restoreOrCreateWindow();
+
     const child = fork("./packages/main/src/modules/server.js");
     child.on("message", async (m: string) => {
       const { action, payload } = JSON.parse(m);
@@ -143,28 +144,39 @@ ipcMain.on("set-title", (event, title) => {
 });
 
 ipcMain.handle(ACTIONS.STATISTICS_GET, async () => {
-  const stats = await knex.select("*").from("statistics");
-  return stats[0];
+  try {
+    const stats = await knex.select("*").from("statistics");
+    return stats[0];
+  } catch (e) {
+    return {};
+  }
 });
 
 ipcMain.handle(ACTIONS.INSTANCES_GET, async () => {
-  const instances = await knex.select("*").from("instance_list");
-  return instances.map((instance) => ({
-    ...instance,
-    data: JSON.parse(instance.data)
-  }));
+  try {
+    const instances = await knex.select("*").from("instance_list");
+    return instances.map((instance) => ({
+      ...instance,
+      data: JSON.parse(instance.data)
+    }));
+  } catch (e) {
+    return [];
+  }
 });
 
 ipcMain.handle(ACTIONS.INSTANCE_GET, async (_event, id) => {
-  let logEntries = await knex
-    .select("*")
-    .from("log")
-    .where("instance", "=", id)
-    .andWhereRaw("tag IS NOT NULL")
-    .orderBy("ts");
-
-  return logEntries.map((logEntry) => ({
-    ...logEntry,
-    data: JSON.parse(logEntry.data)
-  }));
+  try {
+    let logEntries = await knex
+      .select("*")
+      .from("log")
+      .where("instance", "=", id)
+      .andWhereRaw("tag IS NOT NULL")
+      .orderBy("ts");
+    return logEntries.map((logEntry) => ({
+      ...logEntry,
+      data: JSON.parse(logEntry.data)
+    }));
+  } catch (e) {
+    return [];
+  }
 });

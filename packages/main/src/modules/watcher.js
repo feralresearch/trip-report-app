@@ -1,6 +1,7 @@
 import os from "os";
 const isWin = os.platform() === "win32";
-const WQL = isWin ? require("wql-process-monitor/promises") : null;
+//const WQL = isWin ? require("wql-process-monitor/promises") : null;
+import { subscribe, closeEventSink } from "wql-process-monitor/promises";
 import readline from "readline";
 
 // Detecting process shutdown on windows is aaaggghhh.
@@ -12,10 +13,11 @@ var rl = readline.createInterface({
 });
 rl.on("SIGINT", () => process.emit("SIGINT"));
 process.on("SIGINT", (e) => {
-  WQL?.closeEventSink().then(() => {
-    if (e.stack) console.log(e.stack);
-    process.exit();
-  });
+  if (isWin)
+    closeEventSink().then(() => {
+      if (e.stack) console.log(e.stack);
+      process.exit();
+    });
 });
 
 export const initializeWatcher = ({ onProcess }) => {
@@ -28,12 +30,14 @@ export const initializeWatcher = ({ onProcess }) => {
   let retryCounter = 0;
   const registerWatch = async () => {
     try {
-      const processMonitor = await WQL.subscribe({
-        creation: true,
-        deletion: true,
-        filter: [process.env.VRCHAT_PROCESS_NAME],
-        whitelist: true
-      });
+      const processMonitor = isWin
+        ? await subscribe({
+            creation: true,
+            deletion: true,
+            filter: [process.env.VRCHAT_PROCESS_NAME],
+            whitelist: true
+          })
+        : null;
 
       processMonitor.on("creation", ([process, pid, filepath, user]) => {
         console.log(`VRCStarted: ${process}::${pid}(${user}) ["${filepath}"]`);
@@ -43,14 +47,6 @@ export const initializeWatcher = ({ onProcess }) => {
         console.log(`VRCStopped: ${process}::${pid}`);
         onProcess();
       });
-
-      /*
-      process.once("SIGINT", () => {
-        console.log("WATCH: WQL close event sink");
-        WQL.closeEventSink();
-        process.exit(0);
-      });
-      */
       console.log("WATCH: subscription OK!");
     } catch (e) {
       if (retryCounter > maxRetries) process.emit("SIGINT");
