@@ -4,9 +4,12 @@ import { formConfig } from "./formConfig.js";
 const PreferencePanel = () => {
   const [preferences, setPreferences] = useState(null);
   const [formVals, setFormVals] = useState(null);
+  const [prefsPath, setPrefsPath] = useState("");
   useEffect(() => {
     const fetchData = async () => {
       const data = await window.databaseAPI.preferencesGet();
+      const prefsPath = await window.databaseAPI.preferencesGetPath();
+      setPrefsPath(prefsPath);
       setPreferences(data);
       setFormVals(data);
     };
@@ -28,6 +31,7 @@ const PreferencePanel = () => {
 
   return (
     <div>
+      {prefsPath}
       {formConfig.map((config, idx) => {
         const { key, display, hidden, tooltip } = config;
         if (!hidden)

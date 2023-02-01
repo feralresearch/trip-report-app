@@ -108,7 +108,7 @@ const _annotateLogData = ({ preferences, data, file }) => {
 };
 
 const vrcLogParse = {
-  convertToJson: async (file) => {
+  convertToJson: async (file, preferences) => {
     let idx = 0;
     const jsonData = [];
     const input = fs.createReadStream(file);
@@ -171,7 +171,7 @@ const vrcLogParse = {
       logFiles.forEach(async (logFile) => {
         const file = path.join(preferences.vrcLogDir, logFile);
         if (preferences.debugMode) console.log(`W->PROCESSING: ${file}`);
-        const jsonData = await convertToJson(file);
+        const jsonData = await convertToJson(file, preferences);
         const id = file.replace(".json", "");
         await importRecords({ id, jsonData, knex, onLog });
         if (preferences.screenshotsManage)

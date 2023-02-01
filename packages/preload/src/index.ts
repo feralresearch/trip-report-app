@@ -27,5 +27,6 @@ contextBridge.exposeInMainWorld("databaseAPI", {
   statisticsGet: () => ipcRenderer.invoke(ACTIONS.STATISTICS_GET),
   preferencesGet: () => ipcRenderer.invoke(ACTIONS.PREFERENCES_GET),
   preferencesSet: (partialPrefs: object) =>
-    ipcRenderer.invoke(ACTIONS.PREFERENCES_SET, partialPrefs)
+    ipcRenderer.invoke(ACTIONS.PREFERENCES_SET, partialPrefs),
+  preferencesGetPath: () => ipcRenderer.invoke(ACTIONS.PREFS_PATH)
 });

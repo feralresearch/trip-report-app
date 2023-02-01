@@ -92,6 +92,6 @@ export const formConfig = [
     key: "debugMode",
     display: "Debug Mode",
     tooltip: "Log additional debugging info",
-    hidden: false
+    hidden: true
   }
 ];

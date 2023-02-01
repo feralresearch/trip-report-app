@@ -1,12 +1,16 @@
 import { app, BrowserWindow } from "electron";
 import { join } from "path";
 import { URL } from "url";
+import path from "path";
+import prefs from "./modules/prefs";
 
 async function createWindow() {
+  const prefsFile = path.join(app.getPath("userData"), "config.json");
+  const preferences = await prefs.load(prefsFile);
   const browserWindow = new BrowserWindow({
     width: 1024,
     height: 1024,
-    skipTaskbar: true, //FIXME: Do not show in taskbar
+    skipTaskbar: !preferences.showInTaskbar,
     show: false, // Use the 'ready-to-show' event to show the instantiated BrowserWindow.
     webPreferences: {
       nodeIntegration: false,

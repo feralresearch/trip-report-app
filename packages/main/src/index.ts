@@ -86,15 +86,15 @@ app.whenReady().then(async () => {
       }
     },
     { type: "separator" },
-    {
+    { role: "quit" }
+    /*{
       label: "Restart",
       click() {
         app.relaunch();
         app.quit();
       }
     },
-
-    { role: "quit" }
+    */
   ]);
 
   tray.setToolTip("Trip Report");
@@ -226,6 +226,10 @@ app.whenReady().then(async () => {
     const webContents = event.sender;
     const win = BrowserWindow.fromWebContents(webContents);
     win?.setTitle(title);
+  });
+
+  ipcMain.handle(ACTIONS.PREFS_PATH, async () => {
+    return path.join(app.getPath("userData"), "config.json");
   });
 
   ipcMain.handle(ACTIONS.STATISTICS_GET, async () => {

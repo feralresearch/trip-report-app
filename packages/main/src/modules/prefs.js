@@ -49,7 +49,6 @@ const prefs = {
   },
   save: async (pathToPrefFile, prefData) => {
     debounce(async () => {
-      console.log(prefData);
       fs.writeFileSync(pathToPrefFile, JSON.stringify(prefData));
       resolve();
     }, 500);
