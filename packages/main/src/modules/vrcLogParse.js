@@ -9,7 +9,7 @@ import { ingestScreenshots, buildDirectoryCache } from "./vrcScreenshots.js";
 import { importRecords } from "./vrcLogImport.js";
 import { makeDir } from "../modules/util.js";
 
-const _annotateLogData = (data, file) => {
+const _annotateLogData = ({ preferences, data, file }) => {
   let currentWorldId, currentWorldName, instanceId;
   const finalTimestamp = data[data.length - 1]?.ts;
   data.forEach((record, idx) => {
@@ -102,7 +102,7 @@ const _annotateLogData = (data, file) => {
     if (record.data)
       record.data = JSON.stringify({ ...record.data, logFile: file });
   });
-  return envBool(process.env.DB_OPTIMIZE)
+  return preferences.dbOptimize
     ? data.filter((datum) => datum.tag?.length > 0)
     : data;
 };
@@ -152,7 +152,7 @@ const vrcLogParse = {
       }
     });
     await new Promise((res) => rl.once("close", res));
-    if (envBool(process.env.DEBUG))
+    if (preferences.debugMode)
       console.log(
         `PARSE: ${path.basename(file)} - ${
           jsonData.length
@@ -160,41 +160,42 @@ const vrcLogParse = {
           process.memoryUsage().heapUsed / 1024 / 1024
         )} MB`
       );
-    return envBool(process.env.DB_ANNOTATE)
-      ? _annotateLogData(jsonData, file)
+    return preferences.dbAnnotate
+      ? _annotateLogData({ preferences, data: jsonData, file })
       : jsonData;
   },
-  processLogfiles: ({ knex, onLog }) => {
-    const directoryCache = buildDirectoryCache();
-    fs.promises.readdir(process.env.DIR_VRC_LOG_FILES).then(async (files) => {
+  processLogfiles: ({ preferences, knex, onLog }) => {
+    const directoryCache = buildDirectoryCache(preferences.vrcScreenshotDir);
+    fs.promises.readdir(preferences.vrcLogDir).then(async (files) => {
       const logFiles = files.filter((file) => file.includes(".txt"));
       logFiles.forEach(async (logFile) => {
-        const file = path.join(process.env.DIR_VRC_LOG_FILES, logFile);
-        if (envBool(process.env.DEBUG)) console.log(`W->PROCESSING: ${file}`);
+        const file = path.join(preferences.vrcLogDir, logFile);
+        if (preferences.debugMode) console.log(`W->PROCESSING: ${file}`);
         const jsonData = await convertToJson(file);
         const id = file.replace(".json", "");
         await importRecords({ id, jsonData, knex, onLog });
-        if (envBool(process.env.SCREENSHOTS_MANAGE))
-          ingestScreenshots(
-            jsonData.filter((item) => item.tag === "screenshot"),
+        if (preferences.screenshotsManage)
+          ingestScreenshots({
+            assetList: jsonData.filter((item) => item.tag === "screenshot"),
             directoryCache,
-            onLog
-          );
+            onLog,
+            preferences
+          });
         const removeAfterImport = () => {
-          if (envBool(process.env.WATCHER_REMOVE_AFTER_IMPORT)) {
-            if (envBool(process.env.DEBUG)) console.log(`W->REMOVING: ${file}`);
+          if (preferences.watcherRemoveAfterImport) {
+            if (preferences.debugMode) console.log(`W->REMOVING: ${file}`);
             fs.unlinkSync(file);
           }
         };
-        if (envBool(process.env.WATCHER_BACKUP_AFTER_IMPORT)) {
+        if (preferences.watcherBackupAfterImport) {
           var fileName = path.basename(file);
-          const backupDir = path.join(process.env.DIR_DATA, "backup");
+          const backupDir = path.join(preferences.dataDir, "backup");
           makeDir(backupDir);
           fs.copyFile(file, path.join(backupDir, fileName), (err) => {
             if (err) return;
             removeAfterImport();
           });
-          if (envBool(process.env.DEBUG))
+          if (preferences.debugMode)
             console.log(`W->BACKING UP: ${file} to ${backupDir}`);
         } else {
           removeAfterImport();

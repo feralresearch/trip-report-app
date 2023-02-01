@@ -70,11 +70,12 @@ const util = {
     };
   },
   envBool: (value) => {
-    return value?.toLowerCase() === "true" ? true : false;
+    if (typeof value === "string")
+      return value?.toLowerCase() === "true" ? true : false;
   },
-  forceDbRebuild: () => {
+  forceDbRebuild: (dataDir) => {
     console.log("*** FORCE REMOVING DATABASE ***");
-    const dbFile = path.join(process.env.DIR_DATA, "database.db");
+    const dbFile = path.join(dataDir, "database.db");
     try {
       fs.copyFileSync(
         dbFile,

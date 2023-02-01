@@ -13,8 +13,9 @@
       "/@/*": ["./src/*"]
     },
     "allowJs": true,
-    "checkJs": false
+    "checkJs": false,
+    "allowSyntheticDefaultImports":true
   },
-  "include": ["src/**/*.ts", "../../types/**/*.d.ts"],
+  "include": ["src/**/*.ts", "../../types/**/*.d.ts", "src/modules/knex/knexfile.js"],
   "exclude": ["**/*.spec.ts", "**/*.test.ts"]
 }

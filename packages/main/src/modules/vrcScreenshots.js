@@ -4,11 +4,8 @@ import sharp from "sharp";
 import { fdir } from "fdir";
 import { makeDir, envBool } from "./util.js";
 
-const _ingestScreenshot = (screenshot, directoryCache, onLog) => {
-  if (
-    fs.existsSync(screenshot.original) &&
-    !envBool(process.env.SCREENSHOTS_FORCE_REBUILD)
-  ) {
+const _ingestScreenshot = (screenshot, directoryCache, onLog, forceRebuild) => {
+  if (fs.existsSync(screenshot.original) && !forceRebuild) {
     onLog(`SKIP: ${screenshot.fileName}`);
   } else {
     const found = directoryCache.filter((item) =>
@@ -32,9 +29,9 @@ const _ingestScreenshot = (screenshot, directoryCache, onLog) => {
 };
 
 const vrcScreenshots = {
-  fileNameToPath: (fileName) => {
+  fileNameToPath: (fileName, dataDir) => {
     const metaData = vrcScreenshots.parseVrchatScreenshotName(fileName);
-    const filePath = `${process.env.DIR_DATA}/assets/${metaData.year}/${
+    const filePath = `${dataDir}/assets/${metaData.year}/${
       metaData.month
     }/${fileName.replace(".png", "")}/original.png`;
     return filePath;
@@ -58,14 +55,14 @@ const vrcScreenshots = {
         };
     return metaData;
   },
-  buildDirectoryCache: () => {
+  buildDirectoryCache: (vrcScreenshotDir) => {
     const findApi = new fdir()
       .filter((path) => !path.startsWith("node_modules"))
       .filter((path) => !path.startsWith("."))
       .withBasePath()
       .withDirs()
-      .crawl(process.env.DIR_VRC_SCREENSHOTS);
-    console.log(`CACHING FILE SEARCH: ${process.env.DIR_VRC_SCREENSHOTS}`);
+      .crawl(vrcScreenshotDir);
+    console.log(`CACHING FILE SEARCH: ${vrcScreenshotDir}`);
     let startTime = performance.now();
     let directoryCache = findApi.sync();
     directoryCache = directoryCache.filter(
@@ -79,7 +76,12 @@ const vrcScreenshots = {
     );
     return directoryCache;
   },
-  ingestScreenshots: (assetList, directoryCache = null, onLog) => {
+  ingestScreenshots: ({
+    assetList,
+    directoryCache = null,
+    onLog,
+    preferences
+  }) => {
     if (assetList.length === 0) return;
     if (!directoryCache) directoryCache = vrcScreenshots.buildDirectoryCache();
     return assetList.map((item) => {
@@ -88,7 +90,7 @@ const vrcScreenshots = {
       const fileName = path.basename(logged?.replaceAll("\\", "/"));
       const data = vrcScreenshots.parseVrchatScreenshotName(fileName);
       const filePath = path.join(
-        process.env.DIR_DATA,
+        preferences.dataDir,
         "assets",
         data["year"],
         data["month"],
@@ -99,12 +101,17 @@ const vrcScreenshots = {
         logged,
         fileName,
         data,
-        source: path.join(process.env.DIR_VRC_SCREENSHOTS, fileName),
+        source: path.join(preferences.vrcScreenshotDir, fileName),
         thumbnail: path.join(filePath, "thumbnail.png"),
         preview: path.join(filePath, "preview.png"),
         original: path.join(filePath, "original.png")
       };
-      _ingestScreenshot(screenshot, directoryCache, onLog);
+      _ingestScreenshot(
+        screenshot,
+        directoryCache,
+        onLog,
+        preferences.screenshotsForceRebuild
+      );
       return screenshot;
     });
   }

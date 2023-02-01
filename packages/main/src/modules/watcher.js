@@ -1,8 +1,9 @@
 import os from "os";
 const isWin = os.platform() === "win32";
-//const WQL = isWin ? require("wql-process-monitor/promises") : null;
 import { subscribe, closeEventSink } from "wql-process-monitor/promises";
 import readline from "readline";
+
+// If WQL hangs, you can reliably un-stick it by restaring "Windows Management Instrumentation" in "Services" panel
 
 // Detecting process shutdown on windows is aaaggghhh.
 // This is the only thing I could get to reliably work.
@@ -20,7 +21,7 @@ process.on("SIGINT", (e) => {
     });
 });
 
-export const initializeWatcher = ({ onProcess }) => {
+export const initializeWatcher = ({ processName, onProcess }) => {
   if (!isWin) {
     console.log("WARNING: Watcher only works on Windows!");
     return;
@@ -34,7 +35,7 @@ export const initializeWatcher = ({ onProcess }) => {
         ? await subscribe({
             creation: true,
             deletion: true,
-            filter: [process.env.VRCHAT_PROCESS_NAME],
+            filter: [processName],
             whitelist: true
           })
         : null;

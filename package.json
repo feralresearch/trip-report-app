@@ -1,5 +1,5 @@
 {
-  "name": "vite-electron-builder",
+  "name": "trip-report-app",
   "description": "Secure boilerplate for Electron app based on Vite",
   "version": "1.0.2",
   "private": true,

@@ -9,6 +9,8 @@ const zip = new AdmZip();
 
 const id = process.argv[2];
 const dst = process.argv[3];
+const dataDir = process.argv[4];
+
 const updateProgress = (val) => process.send(val);
 
 updateProgress(1);
@@ -23,7 +25,7 @@ const logEntries = await knex
 const imageList = logEntries.map((entry) => JSON.parse(entry.data).fileName);
 imageList.forEach((fileName, idx) => {
   const metaData = parseVrchatScreenshotName(fileName);
-  const filePath = `${process.env.DIR_DATA}/assets/${metaData.year}/${
+  const filePath = `${dataDir}/assets/${metaData.year}/${
     metaData.month
   }/${fileName.replace(".png", "")}/original.png`;
   var data = fs.readFileSync(filePath);

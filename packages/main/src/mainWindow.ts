@@ -4,6 +4,9 @@ import { URL } from "url";
 
 async function createWindow() {
   const browserWindow = new BrowserWindow({
+    width: 1024,
+    height: 1024,
+    skipTaskbar: true, //FIXME: Do not show in taskbar
     show: false, // Use the 'ready-to-show' event to show the instantiated BrowserWindow.
     webPreferences: {
       nodeIntegration: false,
@@ -13,7 +16,7 @@ async function createWindow() {
       preload: join(app.getAppPath(), "packages/preload/dist/index.cjs")
     }
   });
-
+  browserWindow.setPosition(2800, 400, true);
   /**
    * If the 'show' property of the BrowserWindow's constructor is omitted from the initialization options,
    * it then defaults to 'true'. This can cause flickering as the window loads the html content,
@@ -24,7 +27,6 @@ async function createWindow() {
    */
   browserWindow.on("ready-to-show", () => {
     browserWindow?.show();
-
     if (import.meta.env.DEV) {
       browserWindow?.webContents.openDevTools();
     }
