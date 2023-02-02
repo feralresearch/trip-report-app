@@ -62,7 +62,7 @@ const Home = () => {
             {filteredInstanceList?.map((instance, idx) => {
               currentDate = DateTime.fromMillis(
                 instance?.data.tsEnter
-              ).toLocaleString(DateTime.DATE_FULL);
+              )?.toLocaleString(DateTime.DATE_FULL);
               const showDate =
                 currentDate !== previousDate || filter?.length > 0;
               previousDate = currentDate;

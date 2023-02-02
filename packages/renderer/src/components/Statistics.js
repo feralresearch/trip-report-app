@@ -31,19 +31,19 @@ const Statistics = () => {
         <tbody>
           <tr>
             <td>Worlds Visited</td>
-            <td>{data.total_worlds_visited.toLocaleString("en-US")}</td>
+            <td>{data.total_worlds_visited?.toLocaleString("en-US")}</td>
           </tr>
           <tr>
             <td>Players Encountered</td>
-            <td>{data.total_player_encounters.toLocaleString("en-US")}</td>
+            <td>{data.total_player_encounters?.toLocaleString("en-US")}</td>
           </tr>
           <tr>
             <td>Media Played</td>
-            <td>{data.total_media.toLocaleString("en-US")}</td>
+            <td>{data.total_media?.toLocaleString("en-US")}</td>
           </tr>
           <tr>
             <td>Records</td>
-            <td>{data.total_records.toLocaleString("en-US")}</td>
+            <td>{data.total_records?.toLocaleString("en-US")}</td>
           </tr>
         </tbody>
       </table>
