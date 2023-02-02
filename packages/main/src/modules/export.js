@@ -15,7 +15,7 @@ const updateProgress = (val) => process.send(val);
 
 updateProgress(1);
 
-const knex = Knex(knexConfig);
+//const knex = Knex(knexConfig);
 const logEntries = await knex
   .select("*")
   .from("log")

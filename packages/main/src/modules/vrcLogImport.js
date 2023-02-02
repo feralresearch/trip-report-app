@@ -11,7 +11,7 @@ const vrcLogImport = {
         .catch((e) => console.error(e));
       if (existing?.length > 0) {
         onLog(`IMPORT SKIP: ${id}`);
-        resolve();
+        return resolve();
       } else {
         const chunkCount = Math.ceil(jsonData.length / chunkSize);
         Promise.map(
@@ -24,18 +24,17 @@ const vrcLogImport = {
           },
           { concurrency: 1 } // Serialized import (concurrency = 1) is faster on SQLite!
         )
-          .then(() => {
+          .then(async () => {
             onLog(
               `...${id} - imported ${jsonData.length} records ${
                 chunkCount > 1 ? `(in ${chunkCount} chunks)` : ""
               }`
             );
-            resolve(
-              knex
-                .insert({ ts: Date.now(), import_id: id })
-                .into("import_history")
-                .catch((e) => console.error(e))
-            );
+            await knex
+              .insert({ ts: Date.now(), import_id: id })
+              .into("import_history")
+              .catch((e) => console.error(e));
+            return resolve();
           })
           .catch(reject);
       }

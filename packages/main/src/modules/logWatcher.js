@@ -18,8 +18,6 @@ const prefsFile = process.argv[2];
 const preferences = await prefs.load(prefsFile);
 const knex = knexInit(preferences.dataDir);
 
-process.dataDir;
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: findConfig(".env") });
 if (!env.validate(preferences)) process.exit();
