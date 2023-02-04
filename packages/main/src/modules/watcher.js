@@ -1,31 +1,45 @@
 import os from "os";
 const isWin = os.platform() === "win32";
-//import { subscribe, closeEventSink } from "wql-process-monitor/promises";
+import { subscribe, closeEventSink } from "wql-process-monitor/promises";
 import readline from "readline";
 
 // If WQL hangs, you can reliably un-stick it by restaring "Windows Management Instrumentation" in "Services" panel
 
-// Detecting process shutdown on windows is aaaggghhh.
-// This is the only thing I could get to reliably work.
 // Without closeEventSink, WQL locks up
-var rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
+const terminate = (e) => {
+  console.log("WATCHER: Close Event Sink");
+  closeEventSink().then(() => {
+    if (e?.stack) console.log(e.stack);
+    process.exit();
+  });
+};
+
+// This hack works if we call this script directly, but not from electron!
+if (isWin) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  rl.on("SIGINT", () => process.emit("SIGINT"));
+}
+
+// Works from above and by itself on a normal OS with signalling
+// (but also not needed since this is for WQL cleanup)
+process.on("SIGINT", (e) => terminate(e));
+
+// Works by being sent a signal from the parent (child.send("SIGINT");)
+process.on("message", (msg) => {
+  if (msg === "SIGINT") terminate();
 });
-rl.on("SIGINT", () => process.emit("SIGINT"));
-process.on("SIGINT", (e) => {
-  if (isWin)
-    closeEventSink().then(() => {
-      if (e.stack) console.log(e.stack);
-      process.exit();
-    });
+
+process.on("SIGINT", () => {
+  console.log("EVENT: SIGINT, observed from child");
+  process.exit();
 });
 
 export const initializeWatcher = ({ processName, onProcess }) => {
-  if (!isWin) {
-    console.log("WARNING: Watcher only works on Windows!");
-    return;
-  }
+  if (!isWin) return console.log("WARNING: Watcher only works on Windows!");
+  if (!processName) return console.log("WARNING: Need to specify process name");
   const retryIn = 2000;
   const maxRetries = 10;
   let retryCounter = 0;
@@ -48,13 +62,15 @@ export const initializeWatcher = ({ processName, onProcess }) => {
         console.log(`VRCStopped: ${process}::${pid}`);
         onProcess();
       });
-      console.log("WATCH: subscription OK!");
+      console.log(`WATCHER: subscription to ${processName} OK!`);
     } catch (e) {
       if (retryCounter > maxRetries) process.emit("SIGINT");
       const ms = retryIn + retryIn * retryCounter;
       retryCounter++;
       console.log(
-        `WATCH: *** WQL failed, retry (${retryCounter}) in ${ms / 1000}s...`
+        `ERROR (Watcher): *** WQL to ${processName} failed, retry (${retryCounter}) in ${
+          ms / 1000
+        }s...`
       );
       setTimeout(() => registerWatch(), ms);
       return false;

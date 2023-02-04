@@ -14,8 +14,11 @@ const isWin = os.platform() === "win32";
 
 import prefs from "./prefs.js";
 import { knexInit } from "./knex/knexfile.js";
+
 const prefsFile = process.argv[2];
+
 const preferences = await prefs.load(prefsFile);
+
 const knex = knexInit(preferences.dataDir);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

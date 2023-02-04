@@ -1,62 +1,81 @@
 import fs from "fs";
 import path, { resolve } from "path";
+import electron from "electron";
+import os from "os";
+const { app } = electron;
+const isWin = os.platform() === "win32";
 
-let debounceTimer;
-
-const debounce = (callback, time) => {
-  global.clearTimeout(debounceTimer);
-  debounceTimer = global.setTimeout(callback, time);
-};
+const prefsFile = app
+  ? path.join(app.getPath("userData"), "config.json")
+  : null;
 
 const prefs = {
-  default: {
-    openAtLogin: false,
-    showInTaskbar: false,
-    vrcProcessName: "VRChat.exe",
-    vrcLogDir: "", //"C:\\Users\\An\\AppData\\LocalLow\\VRChat\\VRChat",
-    vrcScreenshotDir: "", //"\\vampyroteuthis.localTentacleAndrewScreenshotsUNSORTED",
-    dataDir: "",
-    watcherEnabled: true,
-    watcherRemoveAfterImport: true,
-    watcherBackupAfterImport: true,
-    dbForceRebuild: true,
-    dbAnnotate: true,
-    dbOptimize: false,
-    screenshotsManage: true,
-    screenshotsForceRebuild: false,
-    debugMode: true
+  prefsFile,
+  default: () => {
+    const userData = app.getPath("userData");
+    let defaults = {
+      dataDir: path.join(prefsFile.replace("config.json", ""), "Data"),
+      openAtLogin: false,
+      showInTaskbar: false,
+      vrcProcessName: "",
+      vrcLogDir: "",
+      vrcScreenshotDir: "",
+      watcherEnabled: false,
+      watcherRemoveAfterImport: true,
+      watcherBackupAfterImport: true,
+      dbForceRebuild: true,
+      dbAnnotate: true,
+      dbOptimize: false,
+      screenshotsManage: true,
+      screenshotsForceRebuild: false,
+      debugMode: true
+    };
+    if (isWin) {
+      const vrcLogDir = path.join(
+        app.getPath("home"),
+        "AppData",
+        "LocalLow",
+        "VRChat",
+        "VRChat"
+      );
+      const vrcScreenshotDir = path.join(
+        app.getPath("home"),
+        "Pictures",
+        "VRChat"
+      );
+      defaults = {
+        ...defaults,
+        vrcProcessName: "VRChat.exe",
+        vrcLogDir,
+        vrcScreenshotDir,
+        watcherEnabled: true
+      };
+    }
+    return defaults;
   },
-  load: (pathToPrefFile) => {
+  load: (pathToPrefs = null) => {
+    if (!pathToPrefs && !app) return;
     return new Promise(async (resolve) => {
-      let defaultData;
-      return await fs.readFile(pathToPrefFile, "utf-8", async (err, data) => {
+      const _prefsFile = pathToPrefs ? pathToPrefs : prefsFile;
+      return await fs.readFile(_prefsFile, "utf-8", async (err, data) => {
         if (err) {
-          console.log(`WARN: Writing defaults to ${pathToPrefFile}`);
-          defaultData = {
-            ...prefs.default,
-            dataDir: path.join(
-              pathToPrefFile.replace("config.json", ""),
-              "Data"
-            )
-          };
-          await prefs.save(pathToPrefFile, defaultData);
+          console.log(`WARN: Writing defaults to ${_prefsFile}`);
+          await prefs.save(prefs.default());
         }
-        resolve(err ? defaultData : JSON.parse(data));
+        resolve(err ? prefs.default() : JSON.parse(data));
       });
     });
   },
-  update: async (pathToPrefFile, partialPrefs) => {
-    const currentPreferences = await prefs.load(pathToPrefFile);
+  update: async (partialPrefs) => {
+    const currentPreferences = await prefs.load();
     Object.keys(partialPrefs).forEach(
       (key) => (currentPreferences[key] = partialPrefs[key])
     );
-    await prefs.save(pathToPrefFile, { ...currentPreferences });
+    await prefs.save({ ...currentPreferences });
   },
-  save: async (pathToPrefFile, prefData) => {
-    debounce(async () => {
-      fs.writeFileSync(pathToPrefFile, JSON.stringify(prefData));
-      resolve();
-    }, 500);
+  save: async (data) => {
+    fs.writeFileSync(prefsFile, JSON.stringify(data));
+    resolve();
   }
 };
 

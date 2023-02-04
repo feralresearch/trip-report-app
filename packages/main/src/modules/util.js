@@ -32,6 +32,7 @@ const util = {
     });
   },
   makeDir: (dir, cb) => {
+    if (!dir) return;
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
       if (typeof cb === "function") cb();
@@ -40,6 +41,7 @@ const util = {
     }
   },
   traverse: async ({ recurse = false, src, onFile, onDir }) => {
+    if (!src) return;
     try {
       const files = await fs.promises.readdir(src);
       for (const file of files) {

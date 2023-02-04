@@ -15,15 +15,14 @@ import icon from "../../../buildResources/icon_19x19.png";
 import { fork } from "child_process";
 import { fileNameToPath } from "./modules/vrcScreenshots.js";
 import * as fs from "fs";
-import prefs from "./modules/prefs";
+import prefs from "./modules/prefs.js";
 import path from "path";
 import { knexInit } from "./modules/knex/knexfile.js";
 import sharp from "sharp";
+import os from "os";
+const isWin = os.platform() === "win32";
+import readline from "readline";
 sharp.cache(false);
-
-app.setLoginItemSettings({
-  openAtLogin: false
-});
 
 // Prevent electron from running multiple instances.
 const isSingleInstance = app.requestSingleInstanceLock();
@@ -69,10 +68,7 @@ const launchMainWindow = async () => {
 
 // Tray
 app.whenReady().then(async () => {
-  //const preferences = await prefs.load(path.join(app.getPath("userData"), "config.json"));
-
   let tray = new Tray(nativeImage.createFromDataURL(icon));
-
   const contextMenu = Menu.buildFromTemplate([
     {
       label: "Open",
@@ -99,18 +95,27 @@ app.whenReady().then(async () => {
   });
 });
 
+process.on("SIGINT", () => {
+  console.log("EVENT: SIGINT, observed from parent");
+  process.exit();
+});
+
 // Create the application window when the background process is ready.
 let logWatcherProcess: any;
 app
   .whenReady()
   .then(async () => {
-    const prefsFile = path.join(app.getPath("userData"), "config.json");
-    const preferences = await prefs.load(prefsFile);
     // Log Watcher
-    if (!logWatcherProcess)
+    if (!logWatcherProcess) {
       logWatcherProcess = fork("./packages/main/src/modules/logWatcher.js", [
-        path.join(app.getPath("userData"), "config.json")
+        prefs.prefsFile ? prefs.prefsFile : ""
       ]);
+
+      // NOTE: On windows, there is no way to fire this with ctrl-c during dev >.<
+      app.on("quit", () => {
+        logWatcherProcess.send("SIGINT");
+      });
+    }
     //if open on launch
     launchMainWindow();
   })
@@ -133,8 +138,7 @@ if (import.meta.env.PROD) {
 
 // Create custom protocol for local media loading
 app.whenReady().then(async () => {
-  const prefsFile = path.join(app.getPath("userData"), "config.json");
-  const preferences = await prefs.load(prefsFile);
+  const preferences = await prefs.load();
   protocol.registerFileProtocol("asset", (request, cb) => {
     if (
       preferences.dataDir &&
@@ -153,8 +157,7 @@ app.whenReady().then(async () => {
 });
 
 app.whenReady().then(async () => {
-  const prefsFile = path.join(app.getPath("userData"), "config.json");
-  const preferences = await prefs.load(prefsFile);
+  const preferences = await prefs.load();
   const knex = knexInit(preferences.dataDir);
 
   ipcMain.handle(ACTIONS.ROTATE_IMAGE, async (_event, args) => {
@@ -274,6 +277,6 @@ app.whenReady().then(async () => {
   });
 
   ipcMain.handle(ACTIONS.PREFERENCES_SET, async (_event, partialPrefs) => {
-    await prefs.update(prefsFile, partialPrefs);
+    await prefs.update(partialPrefs);
   });
 });

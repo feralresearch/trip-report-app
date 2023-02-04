@@ -23,7 +23,7 @@ const _ingestScreenshot = (screenshot, directoryCache, onLog, forceRebuild) => {
           .toFile(screenshot.preview);
       });
     } else {
-      onLog(`SCREENSHOT: Cannot locate: ${screenshot.fileName}`);
+      onLog(`WARN: Cannot locate: ${screenshot.fileName}`);
     }
   }
 };
