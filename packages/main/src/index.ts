@@ -95,11 +95,6 @@ app.whenReady().then(async () => {
   });
 });
 
-process.on("SIGINT", () => {
-  console.log("EVENT: SIGINT, observed from parent");
-  process.exit();
-});
-
 // Create the application window when the background process is ready.
 let logWatcherProcess: any;
 app
@@ -113,7 +108,7 @@ app
 
       // NOTE: On windows, there is no way to fire this with ctrl-c during dev >.<
       app.on("quit", () => {
-        logWatcherProcess.send("SIGINT");
+        if (isWin) logWatcherProcess.send("SIGINT");
       });
     }
     //if open on launch

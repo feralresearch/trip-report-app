@@ -27,9 +27,7 @@ env.display(preferences);
 
 const ipcSend = (action, payload) => {
   console.log(payload);
-  if (process.send) {
-    process.send(JSON.stringify({ action, payload }));
-  }
+  if (process.send) process.send(JSON.stringify({ action, payload }));
 };
 
 knex.migrate.latest().then(async () => {

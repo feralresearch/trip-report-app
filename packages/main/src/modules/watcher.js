@@ -1,7 +1,14 @@
 import os from "os";
 const isWin = os.platform() === "win32";
-import { subscribe, closeEventSink } from "wql-process-monitor/promises";
 import readline from "readline";
+
+let subscribe, closeEventSink;
+import("wql-process-monitor/promises")
+  .then((WQL) => {
+    subscribe = WQL.subscribe;
+    closeEventSink = WQL.closeEventSink;
+  })
+  .catch((err) => {});
 
 // If WQL hangs, you can reliably un-stick it by restaring "Windows Management Instrumentation" in "Services" panel
 
@@ -30,11 +37,6 @@ process.on("SIGINT", (e) => terminate(e));
 // Works by being sent a signal from the parent (child.send("SIGINT");)
 process.on("message", (msg) => {
   if (msg === "SIGINT") terminate();
-});
-
-process.on("SIGINT", () => {
-  console.log("EVENT: SIGINT, observed from child");
-  process.exit();
 });
 
 export const initializeWatcher = ({ processName, onProcess }) => {
