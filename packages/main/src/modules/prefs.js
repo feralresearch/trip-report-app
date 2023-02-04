@@ -2,6 +2,7 @@ import fs from "fs";
 import path, { resolve } from "path";
 
 let debounceTimer;
+
 const debounce = (callback, time) => {
   global.clearTimeout(debounceTimer);
   debounceTimer = global.setTimeout(callback, time);
@@ -12,9 +13,9 @@ const prefs = {
     openAtLogin: false,
     showInTaskbar: false,
     vrcProcessName: "VRChat.exe",
-    vrcLogDir: "C:\\Users\\An\\AppData\\LocalLow\\VRChat\\VRChat",
-    vrcScreenshotDir: "\\vampyroteuthis.localTentacleAndrewScreenshotsUNSORTED",
-    dataDir: "C:\\Users\\AnCode\\trip-report-app\\DATA",
+    vrcLogDir: "", //"C:\\Users\\An\\AppData\\LocalLow\\VRChat\\VRChat",
+    vrcScreenshotDir: "", //"\\vampyroteuthis.localTentacleAndrewScreenshotsUNSORTED",
+    dataDir: "",
     watcherEnabled: true,
     watcherRemoveAfterImport: true,
     watcherBackupAfterImport: true,
@@ -26,17 +27,21 @@ const prefs = {
     debugMode: true
   },
   load: (pathToPrefFile) => {
-    return new Promise((resolve) => {
-      return fs.access(pathToPrefFile, fs.F_OK, async (err) => {
+    return new Promise(async (resolve) => {
+      let defaultData;
+      return await fs.readFile(pathToPrefFile, "utf-8", async (err, data) => {
         if (err) {
-          console.log(
-            `WARN: Prefs missing, writing defaults to ${pathToPrefFile}`
-          );
-          await prefs.save(pathToPrefFile, prefs.default);
-          resolve(JSON.parse(fs.readFileSync(pathToPrefFile, "utf-8")));
-        } else {
-          resolve(JSON.parse(fs.readFileSync(pathToPrefFile, "utf-8")));
+          console.log(`WARN: Writing defaults to ${pathToPrefFile}`);
+          defaultData = {
+            ...prefs.default,
+            dataDir: path.join(
+              pathToPrefFile.replace("config.json", ""),
+              "Data"
+            )
+          };
+          await prefs.save(pathToPrefFile, defaultData);
         }
+        resolve(err ? defaultData : JSON.parse(data));
       });
     });
   },

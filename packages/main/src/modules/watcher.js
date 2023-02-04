@@ -1,6 +1,6 @@
 import os from "os";
 const isWin = os.platform() === "win32";
-import { subscribe, closeEventSink } from "wql-process-monitor/promises";
+//import { subscribe, closeEventSink } from "wql-process-monitor/promises";
 import readline from "readline";
 
 // If WQL hangs, you can reliably un-stick it by restaring "Windows Management Instrumentation" in "Services" panel

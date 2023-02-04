@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import Mousetrap from "mousetrap";
 import { DateTime } from "luxon";
 import { v4 as uuidv4 } from "uuid";
-const assetPath = `asset://${window.databaseAPI.DIR_DATA}/assets`;
 
 const useOutsideAlerter = (ref, onOutsideClick) => {
   useEffect(() => {
@@ -42,7 +41,8 @@ const Zoomed = ({
   onNext,
   onPrev,
   cacheBust,
-  onRotate
+  onRotate,
+  assetPath
 }) => {
   const wrapperRef = useRef(null);
   const imgRef = useRef(null);
@@ -51,7 +51,7 @@ const Zoomed = ({
   });
 
   const rotate = (deg) => {
-    databaseAPI.rotateImage(currentImage.data.fileName, deg, () => {
+    window.databaseAPI.rotateImage(currentImage.data.fileName, deg, () => {
       onRotate();
       const newSrc = `${imgRef.current.src.split("?")[0]}?id=${uuidv4()}`;
       imgRef.current.src = newSrc;
@@ -62,7 +62,8 @@ const Zoomed = ({
 
   const onRotateRight = () => rotate(90);
 
-  const onDownload = () => databaseAPI.exportAsset(currentImage.data.fileName);
+  const onDownload = () =>
+    window.databaseAPI.exportAsset(currentImage.data.fileName);
 
   Mousetrap.bind("esc", onOutsideClick, "keyup");
   Mousetrap.bind("right", onNext, "keyup");
@@ -126,6 +127,18 @@ const Gallery = ({ screenshots, onExport }) => {
   const [nextImage, setNextImage] = useState(null);
   const [currentImage, _setCurrentImage] = useState(null);
   const [cacheBust, setCacheBust] = useState(uuidv4());
+
+  const [prefsPath, setPrefsPath] = useState("");
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await window.databaseAPI.preferencesGet();
+
+      setPrefsPath(data.dataDir);
+    };
+    fetchData();
+  }, []);
+  const assetPath = encodeURI(`asset://${prefsPath}/assets`);
+
   const setCurrentImage = (value) => {
     const nextIdx =
       screenshots.indexOf(value) + 1 < screenshots.length
@@ -143,6 +156,7 @@ const Gallery = ({ screenshots, onExport }) => {
   return (
     <div key={cacheBust}>
       <Zoomed
+        assetPath={assetPath}
         cacheBust={cacheBust}
         onRotate={() => setCacheBust(uuidv4())}
         counter={`${screenshots.indexOf(currentImage) + 1} of ${
@@ -194,6 +208,8 @@ const Gallery = ({ screenshots, onExport }) => {
     </div>
   );
 };
+
+///Users/andrew/Library/Application%20Support/trip-report-app/config.json/assets/2022/04/VRChat_1920x1080_2022-04-05_02-09-24.581/thumbnail.png?id=d4018a25-8934-449f-8ee5-28e99ac5f642
 export default Gallery;
 const styles = {
   gallery: {

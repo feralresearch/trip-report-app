@@ -1,13 +1,13 @@
 {
-  "name": "trip-report-app",
-  "description": "Secure boilerplate for Electron app based on Vite",
-  "version": "1.0.2",
+  "name": "TripReport",
+  "description": "",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "author": {
-    "email": "a@feralresearch.org",
-    "name": "Andrew Sempere",
-    "url": "https://theplacelab.com"
+    "email": "an@whatsthis.one",
+    "name": "Ån",
+    "url": "https://intrepidpixel.org/"
   },
   "engines": {
     "node": "=16.15"

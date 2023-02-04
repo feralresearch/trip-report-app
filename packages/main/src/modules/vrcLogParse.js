@@ -166,42 +166,47 @@ const vrcLogParse = {
   },
   processLogfiles: ({ preferences, knex, onLog }) => {
     const directoryCache = buildDirectoryCache(preferences.vrcScreenshotDir);
-    fs.promises.readdir(preferences.vrcLogDir).then(async (files) => {
-      const logFiles = files.filter((file) => file.includes(".txt"));
-      logFiles.forEach(async (logFile) => {
-        const file = path.join(preferences.vrcLogDir, logFile);
-        if (preferences.debugMode) console.log(`W->PROCESSING: ${file}`);
-        const jsonData = await convertToJson(file, preferences);
-        const id = file.replace(".json", "");
-        await importRecords({ id, jsonData, knex, onLog });
-        if (preferences.screenshotsManage)
-          ingestScreenshots({
-            assetList: jsonData.filter((item) => item.tag === "screenshot"),
-            directoryCache,
-            onLog,
-            preferences
-          });
-        const removeAfterImport = () => {
-          if (preferences.watcherRemoveAfterImport) {
-            if (preferences.debugMode) console.log(`W->REMOVING: ${file}`);
-            fs.unlinkSync(file);
-          }
-        };
-        if (preferences.watcherBackupAfterImport) {
-          var fileName = path.basename(file);
-          const backupDir = path.join(preferences.dataDir, "backup");
-          makeDir(backupDir);
-          fs.copyFile(file, path.join(backupDir, fileName), (err) => {
-            if (err) return;
+    fs.promises
+      .readdir(preferences.vrcLogDir)
+      .then(async (files) => {
+        const logFiles = files.filter((file) => file.includes(".txt"));
+        logFiles.forEach(async (logFile) => {
+          const file = path.join(preferences.vrcLogDir, logFile);
+          if (preferences.debugMode) console.log(`W->PROCESSING: ${file}`);
+          const jsonData = await convertToJson(file, preferences);
+          const id = file.replace(".json", "");
+          await importRecords({ id, jsonData, knex, onLog });
+          if (preferences.screenshotsManage)
+            ingestScreenshots({
+              assetList: jsonData.filter((item) => item.tag === "screenshot"),
+              directoryCache,
+              onLog,
+              preferences
+            });
+          const removeAfterImport = () => {
+            if (preferences.watcherRemoveAfterImport) {
+              if (preferences.debugMode) console.log(`W->REMOVING: ${file}`);
+              fs.unlinkSync(file);
+            }
+          };
+          if (preferences.watcherBackupAfterImport) {
+            var fileName = path.basename(file);
+            const backupDir = path.join(preferences.dataDir, "backup");
+            makeDir(backupDir);
+            fs.copyFile(file, path.join(backupDir, fileName), (err) => {
+              if (err) return;
+              removeAfterImport();
+            });
+            if (preferences.debugMode)
+              console.log(`W->BACKING UP: ${file} to ${backupDir}`);
+          } else {
             removeAfterImport();
-          });
-          if (preferences.debugMode)
-            console.log(`W->BACKING UP: ${file} to ${backupDir}`);
-        } else {
-          removeAfterImport();
-        }
+          }
+        });
+      })
+      .catch((err) => {
+        console.log(`ERROR: Log directory missing ${preferences.vrcLogDir}`);
       });
-    });
   }
 };
 

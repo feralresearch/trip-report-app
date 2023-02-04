@@ -56,6 +56,10 @@ const vrcScreenshots = {
     return metaData;
   },
   buildDirectoryCache: (vrcScreenshotDir) => {
+    if (!vrcScreenshotDir) {
+      console.log("ERROR: Screenshot dir missing");
+      return null;
+    }
     const findApi = new fdir()
       .filter((path) => !path.startsWith("node_modules"))
       .filter((path) => !path.startsWith("."))

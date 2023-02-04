@@ -20,7 +20,6 @@ const knex = knexInit(preferences.dataDir);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: findConfig(".env") });
-if (!env.validate(preferences)) process.exit();
 env.display(preferences);
 
 const ipcSend = (action, payload) => {
