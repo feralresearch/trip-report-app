@@ -64,7 +64,7 @@ export const initializeWatcher = ({ processName, onProcess }) => {
         console.log(`VRCStopped: ${process}::${pid}`);
         onProcess();
       });
-      console.log(`WATCHER: subscription to ${processName} OK!`);
+      console.log(`WATCHER: OK! Subscription to ${processName}`);
     } catch (e) {
       if (retryCounter > maxRetries) process.emit("SIGINT");
       const ms = retryIn + retryIn * retryCounter;

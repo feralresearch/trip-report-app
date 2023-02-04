@@ -5,13 +5,11 @@ const parse = pgConnectionString.parse;
 const env = {
   display: (preferences) => {
     const { watcherEnabled, debugMode } = preferences;
-    console.log(`\n--------------------------------------`);
-    console.log(`Log Watcher`);
-    console.log(`--------------------------------------`);
-    console.log(`Watcher: ${watcherEnabled ? "ENABLED" : "DISABLED"}`);
-    console.log(`DEBUG MODE: ${debugMode ? "ENABLED" : "DISABLED"}`);
-    console.log("DB_ADAPTER: SQLite");
-    console.log(`--------------------------------------`);
+    console.log(`\n***************************`);
+    console.log(`*** Trip Report Backend ***`);
+    console.log(`\n***************************`);
+    console.log(`WATCHER: ${watcherEnabled ? "ENABLED" : "DISABLED"}`);
+    console.log(`DEBUG-MODE: ${debugMode ? "ENABLED" : "DISABLED"}`);
   }
 };
 export default env;

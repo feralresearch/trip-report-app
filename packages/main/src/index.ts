@@ -78,14 +78,6 @@ app.whenReady().then(async () => {
     },
     { type: "separator" },
     { role: "quit" }
-    /*{
-      label: "Restart",
-      click() {
-        app.relaunch();
-        app.quit();
-      }
-    },
-    */
   ]);
 
   tray.setToolTip("Trip Report");
