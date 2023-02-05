@@ -57,7 +57,7 @@ const vrcScreenshots = {
   },
   buildDirectoryCache: (vrcScreenshotDir) => {
     if (!vrcScreenshotDir) {
-      console.log("ERROR: Screenshot dir missing");
+      console.log("ERROR: Please specify a screenshot directory");
       return null;
     }
     const findApi = new fdir()

@@ -171,6 +171,8 @@ const vrcLogParse = {
       .then(async (files) => {
         const logFiles = files.filter((file) => file.includes(".txt"));
         logFiles.forEach(async (logFile) => {
+          console.log(logFile);
+          /*
           const file = path.join(preferences.vrcLogDir, logFile);
           if (preferences.debugMode) console.log(`W->PROCESSING: ${file}`);
           const jsonData = await convertToJson(file, preferences);
@@ -201,7 +203,7 @@ const vrcLogParse = {
               console.log(`W->BACKING UP: ${file} to ${backupDir}`);
           } else {
             removeAfterImport();
-          }
+          }*/
         });
       })
       .catch((err) => {
