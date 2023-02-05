@@ -1,12 +1,20 @@
-console.log("Running...");
+import fs from "fs";
 
-process.on("SIGINT", () => {
-  console.log("EVENT: SIGINT");
-  process.exit();
-});
+console.log("Hi");
 
-process.on("exit", () => {
-  console.log("EVENT: EXIT");
-});
+fs.promises
+  .readdir("/Volumes/Tentacle/Andrew/Screenshots/VRCLogs/")
+  .then(async (files) => {
+    const logFiles = files.filter((file) => file.includes(".txt"));
+    console.log(`LOGPARSER: ${logFiles.length} logfiles found...`);
+  })
+  .catch((err) => {
+    console.log(
+      `LOGPARSER: ERROR: Log directory missing ${preferences.vrcLogDir}`
+    );
+  });
+console.log("Bye");
 
-setInterval(() => {}, 60000);
+
+/Volumes/Tentacle/Andrew/Screenshots/VRCLogs/
+/Volumes/Tentacle/Andrew/Screenshots/

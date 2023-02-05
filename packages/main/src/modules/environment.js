@@ -7,7 +7,7 @@ const env = {
     const { watcherEnabled, debugMode } = preferences;
     console.log(`\n***************************`);
     console.log(`*** Trip Report Backend ***`);
-    console.log(`\n***************************`);
+    console.log(`***************************`);
     console.log(`WATCHER: ${watcherEnabled ? "ENABLED" : "DISABLED"}`);
     console.log(`DEBUG-MODE: ${debugMode ? "ENABLED" : "DISABLED"}`);
   }

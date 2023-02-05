@@ -45,7 +45,6 @@ knex.migrate.latest().then(async () => {
   });
 
   if (!isWin || (isWin && !isRunning)) onProcess();
-
   if (preferences.watcherEnabled)
     initializeWatcher({ processName: preferences.vrcProcessName, onProcess });
 });

@@ -1,21 +1,24 @@
 "use strict";
-import Knex from "knex";
 import fs from "fs";
 import { parseVrchatScreenshotName } from "./vrcScreenshots.js";
 import AdmZip from "adm-zip";
 import { exit } from "process";
-import knexConfig from "./knex/knexfile.js";
 const zip = new AdmZip();
+import prefs from "./prefs.js";
+import { knexInit } from "./knex/knexfile.js";
 
-const id = process.argv[2];
-const dst = process.argv[3];
-const dataDir = process.argv[4];
+const prefsFile = process.argv[2];
+const id = process.argv[3];
+const dst = process.argv[4];
+const dataDir = process.argv[5];
 
 const updateProgress = (val) => process.send(val);
 
 updateProgress(1);
 
-//const knex = Knex(knexConfig);
+const preferences = await prefs.load(prefsFile);
+const knex = knexInit(preferences.dataDir);
+
 const logEntries = await knex
   .select("*")
   .from("log")

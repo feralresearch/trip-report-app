@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import humanizeDuration from "humanize-duration";
 import PreferencePanel from "./PreferencePanel";
+import ImportPanel from "./ImportPanel";
 
 const Statistics = () => {
   const [data, setData] = useState(null);
@@ -25,6 +26,8 @@ const Statistics = () => {
   return (
     <React.Fragment>
       <PreferencePanel />
+      <hr />
+      <ImportPanel />
       <hr />
       Covering: {humanizeDuration(data.start_date - data.end_date)}
       <table>

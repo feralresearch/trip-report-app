@@ -14,11 +14,13 @@ import("wql-process-monitor/promises")
 
 // Without closeEventSink, WQL locks up
 const terminate = (e) => {
-  console.log("WATCHER: Close Event Sink");
-  closeEventSink().then(() => {
-    if (e?.stack) console.log(e.stack);
-    process.exit();
-  });
+  if (isWin) {
+    console.log("WATCHER: Close Event Sink");
+    closeEventSink().then(() => {
+      if (e?.stack) console.log(e.stack);
+      process.exit();
+    });
+  }
 };
 
 // This hack works if we call this script directly, but not from electron!

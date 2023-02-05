@@ -16,7 +16,7 @@ import { fork } from "child_process";
 import { fileNameToPath } from "./modules/vrcScreenshots.js";
 import * as fs from "fs";
 import prefs from "./modules/prefs.js";
-import path from "path";
+import path, { resolve } from "path";
 import { knexInit } from "./modules/knex/knexfile.js";
 import sharp from "sharp";
 import os from "os";
@@ -196,6 +196,7 @@ app.whenReady().then(async () => {
       if (selectFolder?.filePath) {
         const dst = selectFolder.filePath;
         const child = fork("./packages/main/src/modules/export.js", [
+          prefs.prefsFile,
           id,
           dst,
           preferences.dataDir
@@ -212,9 +213,30 @@ app.whenReady().then(async () => {
   });
 
   ipcMain.on("set-title", (event, title) => {
-    const webContents = event.sender;
-    const win = BrowserWindow.fromWebContents(webContents);
+    const win = BrowserWindow.fromWebContents(event.sender);
     win?.setTitle(title);
+  });
+
+  ipcMain.handle(ACTIONS.BULK_IMPORT, (event, options) => {
+    options = JSON.stringify({
+      logs: "/Volumes/Tentacle/Andrew/Screenshots/VRCLogs/",
+      screenshots: "/Volumes/Tentacle/Andrew/Screenshots/"
+    });
+    const { logs, screenshots } = JSON.parse(options);
+    if (!logs || !screenshots)
+      return { error: "Provide both logs and screenshot paths" };
+
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const child = fork("./packages/main/src/modules/bulkImport.js", [
+      prefs.prefsFile,
+      logs,
+      screenshots
+    ]);
+
+    child.on("message", async (progress: string) => {
+      win?.webContents.send(ACTIONS.PROGRESS, progress);
+    });
+    return { message: "launched" };
   });
 
   ipcMain.handle(ACTIONS.PREFS_PATH, async () => {
@@ -263,7 +285,14 @@ app.whenReady().then(async () => {
     return preferences;
   });
 
+  const debounce = (callback, time) => {
+    global.clearTimeout(global.debounceTimer);
+    global.debounceTimer = global.setTimeout(callback, time);
+  };
+
   ipcMain.handle(ACTIONS.PREFERENCES_SET, async (_event, partialPrefs) => {
-    await prefs.update(partialPrefs);
+    debounce(async () => {
+      await prefs.update(partialPrefs);
+    }, 500);
   });
 });

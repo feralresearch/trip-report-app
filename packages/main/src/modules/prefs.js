@@ -25,7 +25,7 @@ const prefs = {
       watcherBackupAfterImport: true,
       dbForceRebuild: true,
       dbAnnotate: true,
-      dbOptimize: false,
+      dbOptimize: true,
       screenshotsManage: true,
       screenshotsForceRebuild: false,
       debugMode: true

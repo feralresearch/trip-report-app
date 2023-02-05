@@ -5,6 +5,7 @@ const PreferencePanel = () => {
   const [preferences, setPreferences] = useState(null);
   const [formVals, setFormVals] = useState(null);
   const [prefsPath, setPrefsPath] = useState("");
+
   useEffect(() => {
     const fetchData = async () => {
       const data = await window.databaseAPI.preferencesGet();
