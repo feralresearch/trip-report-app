@@ -16,13 +16,15 @@ import { fork } from "child_process";
 import { fileNameToPath } from "./modules/vrcScreenshots.js";
 import * as fs from "fs";
 import prefs from "./modules/prefs.js";
-import path, { resolve } from "path";
+import path from "path";
 import { knexInit } from "./modules/knex/knexfile.js";
 import sharp from "sharp";
 import os from "os";
 const isWin = os.platform() === "win32";
-import readline from "readline";
+
 sharp.cache(false);
+
+//app.commandLine.appendSwitch("js-flags", "--max-old-space-size=8192");
 
 // Prevent electron from running multiple instances.
 const isSingleInstance = app.requestSingleInstanceLock();
@@ -68,7 +70,7 @@ const launchMainWindow = async () => {
 
 // Tray
 app.whenReady().then(async () => {
-  let tray = new Tray(nativeImage.createFromDataURL(icon));
+  const tray = new Tray(nativeImage.createFromDataURL(icon));
   const contextMenu = Menu.buildFromTemplate([
     {
       label: "Open",
@@ -133,7 +135,6 @@ app.whenReady().then(async () => {
     )
       return cb("404");
     const url = decodeURI(request.url.split("?")[0].replace("asset://", ""));
-    console.log(url);
     try {
       return cb(url);
     } catch (e) {
@@ -232,7 +233,10 @@ app.whenReady().then(async () => {
       logs,
       screenshots
     ]);
-
+    child.on("close", function (code) {
+      console.log("Bulk import exited with code " + code);
+      win?.webContents.send(ACTIONS.PROGRESS, 0);
+    });
     child.on("message", async (progress: string) => {
       win?.webContents.send(ACTIONS.PROGRESS, progress);
     });

@@ -20,6 +20,6 @@ export const knexInit = (pathToDatabase) => {
     seeds: {
       directory: "./packages/main/src/modules/knex/seeds"
     },
-    pool: { propagateCreateError: false }
+    pool: { propagateCreateError: false, min: 0, max: 1 }
   });
 };

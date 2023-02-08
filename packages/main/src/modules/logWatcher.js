@@ -1,29 +1,26 @@
 "use strict";
-import dotenv from "dotenv";
-import findConfig from "find-config";
-import path from "path";
-import { fileURLToPath } from "url";
 import ACTIONS from "../actions.js";
-import env from "./environment.js";
-import { envBool, isProcessRunning } from "./util.js";
+import { isProcessRunning } from "./util.js";
 import { initializeWatcher } from "./watcher.js";
 import { processLogfiles } from "./vrcLogParse.js";
-
-import os from "os";
-const isWin = os.platform() === "win32";
-
-import prefs from "./prefs.js";
 import { knexInit } from "./knex/knexfile.js";
-
+import os from "os";
+import prefs from "./prefs.js";
 const prefsFile = process.argv[2];
-
+if (!prefsFile) {
+  console.log("FATAL: Please provide path to preferences file");
+  process.exit();
+}
 const preferences = await prefs.load(prefsFile);
-
+const isWin = os.platform() === "win32";
 const knex = knexInit(preferences.dataDir);
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: findConfig(".env") });
-env.display(preferences);
+console.log(`\n***************************`);
+console.log(`*** Trip Report Backend ***`);
+console.log(`***************************`);
+console.log(`WATCHER: ${preferences.watcherEnabled ? "ENABLED" : "DISABLED"}`);
+console.log(`DEBUG-MODE: ${preferences.debugMode ? "ENABLED" : "DISABLED"}`);
+console.log(`OS: ${isWin ? "Windows" : `NOT Windows (${os.platform()})`}`);
 
 const ipcSend = (action, payload) => {
   console.log(payload);
@@ -34,16 +31,13 @@ knex.migrate.latest().then(async () => {
   const onProcess = () =>
     processLogfiles({
       preferences,
-      knex,
       onLog: (m) => ipcSend(ACTIONS.LOG, m)
     });
 
-  //ipcSend(ACTIONS.PROGRESS, true);
   // If VRChat isn't running, process any existing logfiles
   const isRunning = await isProcessRunning({
     windows: preferences.vrcProcessName
   });
-
   if (!isWin || (isWin && !isRunning)) onProcess();
   if (preferences.watcherEnabled)
     initializeWatcher({ processName: preferences.vrcProcessName, onProcess });

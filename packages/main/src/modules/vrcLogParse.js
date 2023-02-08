@@ -4,10 +4,9 @@ import readline from "readline";
 import humanizeDuration from "humanize-duration";
 import { DateTime, Interval } from "luxon";
 import { v4 as uuidv4 } from "uuid";
-import { envBool } from "../modules/util.js";
-import { ingestScreenshots, buildDirectoryCache } from "./vrcScreenshots.js";
+import { buildDirectoryCache, ingestScreenshots } from "./vrcScreenshots.js";
 import { importRecords } from "./vrcLogImport.js";
-import { makeDir } from "../modules/util.js";
+import { makeDir } from "./util.js";
 
 const _annotateLogData = ({ preferences, data, file }) => {
   let currentWorldId, currentWorldName, instanceId;
@@ -113,11 +112,11 @@ const vrcLogParse = {
     const jsonData = [];
     const input = fs.createReadStream(file);
     input.on("error", (e) => console.error(e));
-    const rl = readline.createInterface({
+    const lineReader = readline.createInterface({
       input,
       crlfDelay: Infinity
     });
-    rl.on("line", (line) => {
+    lineReader.on("line", (line) => {
       if (line.trim().length > 0) {
         let lineArr = line.split(" ");
         const possibleDate = lineArr[0];
@@ -151,7 +150,7 @@ const vrcLogParse = {
         }
       }
     });
-    await new Promise((res) => rl.once("close", res));
+    await new Promise((res) => lineReader.once("close", res));
     if (preferences.debugMode)
       console.log(
         `PARSE: ${path.basename(file)} - ${
@@ -164,20 +163,29 @@ const vrcLogParse = {
       ? _annotateLogData({ preferences, data: jsonData, file })
       : jsonData;
   },
-  processLogfiles: ({ preferences, knex, onLog }) => {
+  processLogfiles: ({ preferences, onLog }) => {
     const directoryCache = buildDirectoryCache(preferences.vrcScreenshotDir);
     fs.promises
       .readdir(preferences.vrcLogDir)
       .then(async (files) => {
         const logFiles = files.filter((file) => file.includes(".txt"));
-        logFiles.forEach(async (logFile) => {
-          console.log(logFile);
-          /*
+
+        for (const logFile of logFiles) {
           const file = path.join(preferences.vrcLogDir, logFile);
-          if (preferences.debugMode) console.log(`W->PROCESSING: ${file}`);
+          if (preferences.debugMode) console.log(`PROCESSING: ${file}`);
+
           const jsonData = await convertToJson(file, preferences);
           const id = file.replace(".json", "");
-          await importRecords({ id, jsonData, knex, onLog });
+
+          console.log(`START: ${id}`);
+          await importRecords({
+            dataDir: preferences.dataDir,
+            id,
+            jsonData,
+            onLog
+          });
+          console.log(`STOP: ${id}`);
+
           if (preferences.screenshotsManage)
             ingestScreenshots({
               assetList: jsonData.filter((item) => item.tag === "screenshot"),
@@ -185,9 +193,11 @@ const vrcLogParse = {
               onLog,
               preferences
             });
+
           const removeAfterImport = () => {
             if (preferences.watcherRemoveAfterImport) {
-              if (preferences.debugMode) console.log(`W->REMOVING: ${file}`);
+              if (preferences.debugMode)
+                console.log(`REMOVING LOGFILE: ${file}`);
               fs.unlinkSync(file);
             }
           };
@@ -200,14 +210,14 @@ const vrcLogParse = {
               removeAfterImport();
             });
             if (preferences.debugMode)
-              console.log(`W->BACKING UP: ${file} to ${backupDir}`);
+              console.log(`BACKING UP LOGFILE: ${file} to ${backupDir}`);
           } else {
             removeAfterImport();
-          }*/
-        });
+          }
+        }
       })
       .catch((err) => {
-        console.log(`ERROR: Log directory missing ${preferences.vrcLogDir}`);
+        console.log(err);
       });
   }
 };

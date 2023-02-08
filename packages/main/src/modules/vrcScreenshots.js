@@ -12,7 +12,7 @@ const _ingestScreenshot = (screenshot, directoryCache, onLog, forceRebuild) => {
       item.includes(screenshot.fileName)
     );
     if (found.length > 0) {
-      onLog(`Ingesting: ${screenshot.fileName}`);
+      onLog(`SCREENSHOT INGEST: ${screenshot.fileName}`);
       fs.copyFile(found[0], screenshot.original, () => {
         sharp(screenshot.original)
           .resize({ width: 300 })
@@ -22,8 +22,18 @@ const _ingestScreenshot = (screenshot, directoryCache, onLog, forceRebuild) => {
           .resize({ width: 1024 })
           .toFile(screenshot.preview);
       });
+      try {
+        fs.copyFile(
+          found[0].replace(".png", "_Environment.png"),
+          screenshot.original.replace(".png", "_Environment.png")
+        );
+        fs.copyFile(
+          found[0].replace(".png", "_Player.png"),
+          screenshot.original.replace(".png", "_Player.png")
+        );
+      } catch {}
     } else {
-      onLog(`WARN: Cannot locate: ${screenshot.fileName}`);
+      onLog(`SCREENSHOT WARN: Cannot locate: ${screenshot.fileName}`);
     }
   }
 };
@@ -66,7 +76,9 @@ const vrcScreenshots = {
       .withBasePath()
       .withDirs()
       .crawl(vrcScreenshotDir);
-    console.log(`CACHING: ${vrcScreenshotDir}`);
+    console.log(
+      `SCREENSHOT: CACHING (Might take a while..): ${vrcScreenshotDir}`
+    );
     let startTime = performance.now();
     let directoryCache = findApi.sync();
     directoryCache = directoryCache.filter(
