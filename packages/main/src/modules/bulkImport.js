@@ -14,7 +14,7 @@ preferences = {
   vrcScreenshotDir: process.argv[4],
   vrcLogDir: process.argv[3],
   watcherRemoveAfterImport: false,
-  watcherBackupAfterImport: true
+  watcherBackupAfterImport: false
 };
 
 console.log(`\n*******************************`);
@@ -29,7 +29,11 @@ const ipcSend = (action, payload) => {
   if (process.send) process.send(JSON.stringify({ action, payload }));
 };
 
-processLogfiles({
-  preferences,
-  onLog: (m) => ipcSend(ACTIONS.LOG, m)
+const knex = knexInit(preferences.dataDir);
+knex.migrate.latest().then(() => {
+  processLogfiles({
+    knex,
+    preferences,
+    onLog: (m) => ipcSend(ACTIONS.LOG, m)
+  });
 });

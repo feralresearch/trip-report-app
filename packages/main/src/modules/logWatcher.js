@@ -30,6 +30,7 @@ const ipcSend = (action, payload) => {
 knex.migrate.latest().then(async () => {
   const onProcess = () =>
     processLogfiles({
+      knex,
       preferences,
       onLog: (m) => ipcSend(ACTIONS.LOG, m)
     });

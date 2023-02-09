@@ -163,7 +163,8 @@ const vrcLogParse = {
       ? _annotateLogData({ preferences, data: jsonData, file })
       : jsonData;
   },
-  processLogfiles: ({ preferences, onLog }) => {
+  processLogfiles: ({ knex, preferences, onLog }) => {
+    if (!preferences.vrcLogDir.length) return;
     const directoryCache = buildDirectoryCache(preferences.vrcScreenshotDir);
     fs.promises
       .readdir(preferences.vrcLogDir)
@@ -172,19 +173,19 @@ const vrcLogParse = {
 
         for (const logFile of logFiles) {
           const file = path.join(preferences.vrcLogDir, logFile);
-          if (preferences.debugMode) console.log(`PROCESSING: ${file}`);
-
           const jsonData = await convertToJson(file, preferences);
           const id = file.replace(".json", "");
+          if (preferences.debugMode) {
+            console.log(`PROCESSING: ${id}`);
+            console.log(file);
+          }
 
-          console.log(`START: ${id}`);
           await importRecords({
-            dataDir: preferences.dataDir,
+            knex,
             id,
             jsonData,
             onLog
           });
-          console.log(`STOP: ${id}`);
 
           if (preferences.screenshotsManage)
             ingestScreenshots({
@@ -210,7 +211,7 @@ const vrcLogParse = {
               removeAfterImport();
             });
             if (preferences.debugMode)
-              console.log(`BACKING UP LOGFILE: ${file} to ${backupDir}`);
+              console.log(`BACKING UP LOGFILE: ${fileName}`);
           } else {
             removeAfterImport();
           }
