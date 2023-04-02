@@ -14,8 +14,13 @@
     },
     "allowJs": true,
     "checkJs": false,
-    "allowSyntheticDefaultImports":true
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*.ts", "../../types/**/*.d.ts", "src/modules/knex/knexfile.js", "src/modules/prefs.js"],
+  "include": [
+    "src/**/*.ts",
+    "../../types/**/*.d.ts",
+    //"src/modules/knex/knexfile.js",
+    "src/modules/prefs.js"
+  ],
   "exclude": ["**/*.spec.ts", "**/*.test.ts"]
 }

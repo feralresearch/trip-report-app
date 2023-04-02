@@ -1,5 +1,4 @@
-const fetch = require("node-fetch");
-module.exports = {
+const youTube = {
   extractYoutubeId: (url) => {
     //https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
     const regExp =
@@ -13,16 +12,13 @@ module.exports = {
       return title.toLowerCase().includes("youtube") ? `[YT] ${title}` : title;
     };
 
-    const videoId = module.exports.extractYoutubeId(url);
+    const videoId = youTube.extractYoutubeId(url);
     if (!videoId) return cleanUrl(url);
     console.log(videoId);
 
-    fetch(
-      `${process.env.REACT_APP_TRIPREPORT_SERVICE}/youtube?video_id=${videoId}`,
-      {
-        method: "GET"
-      }
-    )
+    fetch(`UNDEFINED/youtube?video_id=${videoId}`, {
+      method: "GET"
+    })
       .then((response) => response.json())
       .then((data) => {
         if (data.error) {
@@ -40,3 +36,4 @@ module.exports = {
       });
   }
 };
+export default youTube;

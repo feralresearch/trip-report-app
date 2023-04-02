@@ -203,7 +203,7 @@ const vrcLogParse = {
             }
           };
           if (preferences.watcherBackupAfterImport) {
-            var fileName = path.basename(file);
+            const fileName = path.basename(file);
             const backupDir = path.join(preferences.dataDir, "backup");
             makeDir(backupDir);
             fs.copyFile(file, path.join(backupDir, fileName), (err) => {

@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs";
 import sharp from "sharp";
 import { fdir } from "fdir";
-import { makeDir, envBool } from "./util.js";
+import { makeDir } from "./util.js";
 
 const _ingestScreenshot = (screenshot, directoryCache, onLog, forceRebuild) => {
   if (fs.existsSync(screenshot.original) && !forceRebuild) {
@@ -31,7 +31,9 @@ const _ingestScreenshot = (screenshot, directoryCache, onLog, forceRebuild) => {
           found[0].replace(".png", "_Player.png"),
           screenshot.original.replace(".png", "_Player.png")
         );
-      } catch {}
+      } catch (e) {
+        console.log(e);
+      }
     } else {
       onLog(`SCREENSHOT WARN: Cannot locate: ${screenshot.fileName}`);
     }

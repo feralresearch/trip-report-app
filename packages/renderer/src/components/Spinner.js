@@ -2,11 +2,9 @@ import React, { useEffect, useState } from "react";
 import { SpinnerCircular } from "spinners-react";
 export default function Spinner({ showPercentage = true }) {
   const [percentComplete, setPercentComplete] = useState("0%");
-  const [lastUpdate, setLastUpdate] = useState(Date.now());
   useEffect(() => {
     let timer;
     window.electronAPI.onIsWorkingUpdate((_event, value) => {
-      setLastUpdate(Date.now());
       const percentage = Math.floor((1 - value) * 100 * 0.75);
       setPercentComplete(`${percentage}%`);
       clearInterval(timer);

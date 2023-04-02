@@ -8,9 +8,11 @@ import("wql-process-monitor/promises")
     subscribe = WQL.subscribe;
     closeEventSink = WQL.closeEventSink;
   })
-  .catch((err) => {});
+  .catch((e) => {
+    console.log(e);
+  });
 
-// If WQL hangs, you can reliably un-stick it by restaring "Windows Management Instrumentation" in "Services" panel
+// If WQL hangs, you can reliably un-stick it by restarting "Windows Management Instrumentation" in "Services" panel
 
 // Without closeEventSink, WQL locks up
 const terminate = (e) => {

@@ -12,7 +12,7 @@ const prefsFile = app
 const prefs = {
   prefsFile,
   default: () => {
-    const userData = app.getPath("userData");
+    //const userData = app.getPath("userData");
     let defaults = {
       dataDir: path.join(prefsFile.replace("config.json", ""), "Data"),
       openAtLogin: false,
@@ -55,6 +55,7 @@ const prefs = {
   },
   load: (pathToPrefs = null) => {
     if (!pathToPrefs && !app) return;
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {
       const _prefsFile = pathToPrefs ? pathToPrefs : prefsFile;
       return await fs.readFile(_prefsFile, "utf-8", async (err, data) => {

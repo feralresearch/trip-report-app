@@ -9,7 +9,7 @@ import Spinner from "../components/Spinner";
 
 const Instance = () => {
   const params = useParams();
-  const instanceId = params.id;
+  //const instanceId = params.id;
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -55,7 +55,7 @@ const Instance = () => {
           <div style={styles.section}>
             <Gallery
               screenshots={screenshots}
-              onExport={() => databaseAPI.exportAsset(params.id)}
+              onExport={() => window.databaseAPI.exportAsset(params.id)}
             />
           </div>
         )}

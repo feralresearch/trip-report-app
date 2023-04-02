@@ -1,9 +1,12 @@
 export { sha256sum } from "./nodeCrypto";
 export { versions } from "./versions";
 import { ipcRenderer, contextBridge } from "electron";
-import ACTIONS from "../../main/src/modules/actions.js";
+import ACTIONS from "../../main/src/actions.js";
 
-const addListener = (action: string, cb: any) => {
+const addListener = (
+  action: string,
+  cb: (event: Electron.IpcRendererEvent, ...args: []) => void
+) => {
   ipcRenderer.removeAllListeners(action);
   return ipcRenderer.on(action, cb);
 };
@@ -18,7 +21,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 });
 
 contextBridge.exposeInMainWorld("databaseAPI", {
-  rotateImage: (id: string, deg: number, cb: any) => {
+  rotateImage: (id: string, deg: number, cb: () => void) => {
     ipcRenderer.invoke(ACTIONS.ROTATE_IMAGE, [id, deg]).then(() => cb());
   },
   exportAsset: (id: string) => ipcRenderer.invoke(ACTIONS.EXPORT_ASSET, id),
@@ -28,7 +31,7 @@ contextBridge.exposeInMainWorld("databaseAPI", {
   preferencesGet: () => ipcRenderer.invoke(ACTIONS.PREFERENCES_GET),
   preferencesSet: (partialPrefs: object) =>
     ipcRenderer.invoke(ACTIONS.PREFERENCES_SET, partialPrefs),
-  preferencesGetPath: () => ipcRenderer.invoke(ACTIONS.PREFS_PATH),
+  preferencesGetPath: () => ipcRenderer.invoke(ACTIONS.PREFERENCES_PATH),
   bulkImport: (options: string) =>
     ipcRenderer.invoke(ACTIONS.BULK_IMPORT, options)
 });

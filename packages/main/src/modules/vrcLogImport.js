@@ -1,5 +1,3 @@
-import { knexInit } from "./knex/knexfile.js";
-
 const vrcLogImport = {
   importRecords: ({ knex, id, jsonData, onLog }) => {
     const chunkSize = 500;

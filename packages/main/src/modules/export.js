@@ -31,7 +31,7 @@ imageList.forEach((fileName, idx) => {
   const filePath = `${dataDir}/assets/${metaData.year}/${
     metaData.month
   }/${fileName.replace(".png", "")}/original.png`;
-  var data = fs.readFileSync(filePath);
+  const data = fs.readFileSync(filePath);
   updateProgress(1 - idx / imageList.length);
   zip.addFile(`${fileName}.png`, Buffer.from(data, "utf8"));
 });

@@ -15,9 +15,7 @@ test("ReactiveHash component", async () => {
   const dataInput = wrapper.get<HTMLInputElement>("input:not([readonly])");
   const hashInput = wrapper.get<HTMLInputElement>("input[readonly]");
 
-  const dataToHashed = Math.random()
-    .toString(36)
-    .slice(2, 7);
+  const dataToHashed = Math.random().toString(36).slice(2, 7);
   await dataInput.setValue(dataToHashed);
   expect(hashInput.element.value).toBe(`${dataToHashed}:HASHED`);
 });

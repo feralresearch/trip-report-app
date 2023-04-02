@@ -10,7 +10,7 @@ import {
 } from "electron";
 import "./security-restrictions";
 import { restoreOrCreateWindow } from "/@/mainWindow";
-import ACTIONS from "./modules/actions.js";
+import ACTIONS from "./actions.js";
 import icon from "../../../buildResources/icon_19x19.png";
 import { fork } from "child_process";
 import { fileNameToPath } from "./modules/vrcScreenshots.js";
@@ -88,13 +88,13 @@ app.whenReady().then(async () => {
 
   tray.setToolTip("Trip Report");
   tray.setContextMenu(contextMenu);
-  tray.on("click", (e) => {
+  tray.on("click", () => {
     launchMainWindow();
   });
 });
 
 // Create the application window when the background process is ready.
-let logWatcherProcess: any;
+let logWatcherProcess: unknown;
 app
   .whenReady()
   .then(async () => {
@@ -122,8 +122,7 @@ if (import.meta.env.PROD) {
     .then((module) => {
       const autoUpdater =
         module.autoUpdater ||
-        // @ts-expect-error Hotfix for https://github.com/electron-userland/electron-builder/issues/7338
-        (module.default.autoUpdater as typeof module["autoUpdater"]);
+        (module.default.autoUpdater as (typeof module)["autoUpdater"]);
       return autoUpdater.checkForUpdatesAndNotify();
     })
     .catch((e) => console.error("Failed check updates:", e));
@@ -156,8 +155,8 @@ app.whenReady().then(async () => {
     const [id, deg] = args;
     if (id.includes(".png")) {
       const fileName = id;
-      const promises: any[] = [];
-      let pathToFile = fileNameToPath(fileName, preferences.dataDir);
+      const promises: unknown[] = [];
+      const pathToFile = fileNameToPath(fileName, preferences.dataDir);
       [
         pathToFile,
         pathToFile.replace("original.png", "thumbnail.png"),
@@ -167,7 +166,7 @@ app.whenReady().then(async () => {
           new Promise<void>((resolve) => {
             sharp(path)
               .rotate(deg)
-              .toBuffer((e: any, buffer: any) => {
+              .toBuffer((e, buffer) => {
                 fs.writeFileSync(path, buffer);
                 resolve();
               });
@@ -187,9 +186,9 @@ app.whenReady().then(async () => {
         defaultPath: `~/Desktop/${fileName}`,
         properties: ["showOverwriteConfirmation"]
       });
-      if (selectFolder?.filePath) {
-        var data = fs.readFileSync(pathToFile);
-        fs.writeFile(selectFolder.filePath, data, (err: any) => {
+      if (typeof selectFolder === "object" && selectFolder.filePath) {
+        const data = fs.readFileSync(pathToFile);
+        fs.writeFile(selectFolder.filePath, data, (err: unknown) => {
           if (err) console.error(err);
         });
       }
@@ -198,7 +197,7 @@ app.whenReady().then(async () => {
         defaultPath: `~/Desktop/${id}.zip`,
         properties: ["showOverwriteConfirmation"]
       });
-      if (selectFolder?.filePath) {
+      if (typeof selectFolder === "object" && selectFolder.filePath) {
         const dst = selectFolder.filePath;
         const child = fork("./packages/main/src/modules/export.js", [
           prefs.prefsFile,
@@ -207,11 +206,11 @@ app.whenReady().then(async () => {
           preferences.dataDir
         ]);
         child.on("message", async (progress: string) => {
-          win?.webContents.send(ACTIONS.PROGRESS, progress);
+          if (win) win.webContents.send(ACTIONS.PROGRESS, progress);
         });
         child.on("close", function (code) {
           console.log("Export exited with code " + code);
-          win?.webContents.send(ACTIONS.PROGRESS, 0);
+          if (win) win.webContents.send(ACTIONS.PROGRESS, 0);
         });
       }
     }
@@ -219,7 +218,7 @@ app.whenReady().then(async () => {
 
   ipcMain.on("set-title", (event, title) => {
     const win = BrowserWindow.fromWebContents(event.sender);
-    win?.setTitle(title);
+    if (win) win.setTitle(title);
   });
 
   ipcMain.handle(ACTIONS.BULK_IMPORT, (event, options = "{}") => {
@@ -235,21 +234,21 @@ app.whenReady().then(async () => {
     ]);
     child.on("close", function (code) {
       console.log("Bulk import exited with code " + code);
-      win?.webContents.send(ACTIONS.PROGRESS, 0);
+      if (win) win.webContents.send(ACTIONS.PROGRESS, 0);
     });
     child.on("message", async (progress: string) => {
-      win?.webContents.send(ACTIONS.PROGRESS, progress);
+      if (win) win.webContents.send(ACTIONS.PROGRESS, progress);
     });
     return { message: "launched" };
   });
 
-  ipcMain.handle(ACTIONS.PREFS_PATH, async () => {
+  ipcMain.handle(ACTIONS.PREFERENCES_PATH, async () => {
     return path.join(app.getPath("userData"), "config.json");
   });
 
   ipcMain.handle(ACTIONS.STATISTICS_GET, async () => {
     try {
-      const stats = await knex?.select("*").from("statistics");
+      const stats = knex ? await knex.select("*").from("statistics") : null;
       return stats[0];
     } catch (e) {
       return {};
@@ -259,10 +258,10 @@ app.whenReady().then(async () => {
   ipcMain.handle(ACTIONS.INSTANCES_GET, async () => {
     try {
       const instances = await knex
-        ?.select("*")
+        .select("*")
         .from("instance_list")
         .orderBy("ts", "desc");
-      return instances?.map((instance) => ({
+      return instances.map((instance) => ({
         ...instance,
         data: JSON.parse(instance.data)
       }));
@@ -273,8 +272,8 @@ app.whenReady().then(async () => {
 
   ipcMain.handle(ACTIONS.INSTANCE_GET, async (_event, id) => {
     try {
-      let logEntries = await knex
-        ?.select("*")
+      const logEntries = await knex
+        .select("*")
         .from("log")
         .where("instance", "=", id)
         .andWhereRaw("tag IS NOT NULL")

@@ -5,7 +5,7 @@ const exec = { exec: exec$0 }.exec;
 
 const util = {
   isProcessRunning: ({ windows, mac, linux }) => {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
       const plat = process.platform;
       const cmd =
         plat == "win32"
@@ -26,7 +26,7 @@ const util = {
       if (cmd === "" || proc === "") {
         resolve(false);
       }
-      exec(cmd, function (err, stdout, stderr) {
+      exec(cmd, function (err, stdout) {
         resolve(stdout?.toLowerCase().indexOf(proc?.toLowerCase()) > -1);
       });
     });
@@ -83,8 +83,10 @@ const util = {
         dbFile,
         dbFile.replace(".db", `_backup_${Date.now()}.db`)
       );
-      fs.unlink(dbFile, () => {});
-    } catch {}
+      fs.unlink(dbFile, null);
+    } catch (e) {
+      console.log(e);
+    }
   }
 };
 
