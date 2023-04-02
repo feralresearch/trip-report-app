@@ -23,3 +23,7 @@ C:\Users\An\Pictures\VRChat
 
 Need to keep node version to 16.15 because of a problem with ffmapi and the watcher code
 https://github.com/node-ffi-napi/node-ffi-napi
+
+## Troubleshooting Actions
+
+act -W ./.github/workflows/release.yml
