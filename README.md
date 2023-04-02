@@ -1,6 +1,6 @@
 # Trip Report App
 
-Electron app version of Trip Report
+Electron app version of Trip Report based on https://github.com/cawa-93/vite-electron-builder
 
 ### OSX M1
 
@@ -12,3 +12,14 @@ npm rebuild sqlite3 --build-from-source --target_arch=arm64 --fallback-to-build
 ## Bulk
 
 node ./packages/main/src/modules/bulkImport.js "/Users/andrew/Library/Application Support/TripReport/config.json" "/Volumes/Tentacle/Andrew/Screenshots/VRCLogs" "/Volumes/Tentacle/Andrew/Screenshots"
+
+C:\Users\An\AppData\LocalLow\VRChat\VRChat
+C:\Users\An\Pictures\VRChat
+
+\\vampyroteuthis.local\Tentacle\Andrew\Screenshots\VRCLogs
+\\vampyroteuthis.local\Tentacle\Andrew\Screenshots\UNSORTED
+
+## Known Issues
+
+Need to keep node version to 16.15 because of a problem with ffmapi and the watcher code
+https://github.com/node-ffi-napi/node-ffi-napi

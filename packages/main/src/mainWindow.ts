@@ -48,7 +48,6 @@ async function createWindow() {
           "../renderer/dist/index.html",
           "file://" + __dirname
         ).toString();
-
   await browserWindow.loadURL(pageUrl);
 
   return browserWindow;

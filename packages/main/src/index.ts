@@ -10,7 +10,7 @@ import {
 } from "electron";
 import "./security-restrictions";
 import { restoreOrCreateWindow } from "/@/mainWindow";
-import ACTIONS from "./actions.js";
+import ACTIONS from "./modules/actions.js";
 import icon from "../../../buildResources/icon_19x19.png";
 import { fork } from "child_process";
 import { fileNameToPath } from "./modules/vrcScreenshots.js";
@@ -44,6 +44,10 @@ app.on("window-all-closed", () => {
 
 // @see https://www.electronjs.org/docs/latest/api/app#event-activate-macos Event: 'activate'.
 app.on("activate", restoreOrCreateWindow);
+
+app.setLoginItemSettings({
+  openAtLogin: true
+});
 
 const launchMainWindow = async () => {
   const window = await restoreOrCreateWindow();
@@ -218,11 +222,7 @@ app.whenReady().then(async () => {
     win?.setTitle(title);
   });
 
-  ipcMain.handle(ACTIONS.BULK_IMPORT, (event, options) => {
-    options = JSON.stringify({
-      logs: "/Volumes/Tentacle/Andrew/Screenshots/VRCLogs/",
-      screenshots: "/Volumes/Tentacle/Andrew/Screenshots/"
-    });
+  ipcMain.handle(ACTIONS.BULK_IMPORT, (event, options = "{}") => {
     const { logs, screenshots } = JSON.parse(options);
     if (!logs || !screenshots)
       return { error: "Provide both logs and screenshot paths" };
@@ -249,7 +249,7 @@ app.whenReady().then(async () => {
 
   ipcMain.handle(ACTIONS.STATISTICS_GET, async () => {
     try {
-      const stats = await knex.select("*").from("statistics");
+      const stats = await knex?.select("*").from("statistics");
       return stats[0];
     } catch (e) {
       return {};
@@ -258,8 +258,11 @@ app.whenReady().then(async () => {
 
   ipcMain.handle(ACTIONS.INSTANCES_GET, async () => {
     try {
-      const instances = await knex.select("*").from("instance_list");
-      return instances.map((instance) => ({
+      const instances = await knex
+        ?.select("*")
+        .from("instance_list")
+        .orderBy("ts", "desc");
+      return instances?.map((instance) => ({
         ...instance,
         data: JSON.parse(instance.data)
       }));
@@ -271,7 +274,7 @@ app.whenReady().then(async () => {
   ipcMain.handle(ACTIONS.INSTANCE_GET, async (_event, id) => {
     try {
       let logEntries = await knex
-        .select("*")
+        ?.select("*")
         .from("log")
         .where("instance", "=", id)
         .andWhereRaw("tag IS NOT NULL")

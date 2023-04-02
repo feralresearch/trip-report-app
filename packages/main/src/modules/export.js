@@ -1,11 +1,11 @@
 "use strict";
 import fs from "fs";
-import { parseVrchatScreenshotName } from "./vrcScreenshots.js";
+import { parseVrchatScreenshotName } from "../modules/vrcScreenshots.js";
 import AdmZip from "adm-zip";
 import { exit } from "process";
 const zip = new AdmZip();
-import prefs from "./prefs.js";
-import { knexInit } from "./knex/knexfile.js";
+import prefs from "../modules/prefs.js";
+import { knexInit } from "../modules/knex/knexfile.js";
 
 const prefsFile = process.argv[2];
 const id = process.argv[3];

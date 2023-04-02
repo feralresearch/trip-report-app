@@ -1,11 +1,11 @@
 "use strict";
-import ACTIONS from "../actions.js";
-import { isProcessRunning } from "./util.js";
-import { initializeWatcher } from "./watcher.js";
-import { processLogfiles } from "./vrcLogParse.js";
-import { knexInit } from "./knex/knexfile.js";
+import ACTIONS from "./actions.js";
+import { isProcessRunning } from "../modules/util.js";
+import { initializeWatcher } from "../modules/watcher.js";
+import { processLogfiles } from "../modules/vrcLogParse.js";
+import { knexInit } from "../modules/knex/knexfile.js";
 import os from "os";
-import prefs from "./prefs.js";
+import prefs from "../modules/prefs.js";
 const prefsFile = process.argv[2];
 if (!prefsFile) {
   console.log("FATAL: Please provide path to preferences file");

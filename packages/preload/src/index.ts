@@ -1,7 +1,7 @@
 export { sha256sum } from "./nodeCrypto";
 export { versions } from "./versions";
 import { ipcRenderer, contextBridge } from "electron";
-import ACTIONS from "../../main/src/actions.js";
+import ACTIONS from "../../main/src/modules/actions.js";
 
 const addListener = (action: string, cb: any) => {
   ipcRenderer.removeAllListeners(action);

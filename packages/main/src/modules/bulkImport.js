@@ -2,10 +2,10 @@
 nodemon ./packages/main/src/modules/bulkImport.js "/Users/andrew/Library/Application Support/TripReport/config.json" "/Volumes/Tentacle/Andrew/Screenshots/VRCLogs" "/Volumes/Tentacle/Andrew/Screenshots"
 */
 "use strict";
-import prefs from "./prefs.js";
-import { knexInit } from "./knex/knexfile.js";
-import { processLogfiles } from "./vrcLogParse.js";
-import ACTIONS from "../actions.js";
+import prefs from "../modules/prefs.js";
+import { knexInit } from "../modules/knex/knexfile.js";
+import { processLogfiles } from "../modules/vrcLogParse.js";
+import ACTIONS from "./actions.js";
 
 const prefsFile = process.argv[2];
 let preferences = await prefs.load(prefsFile);

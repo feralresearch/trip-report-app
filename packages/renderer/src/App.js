@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Home from "./pages/Home";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 import Spinner from "./components/Spinner";
 
 function App() {
@@ -12,13 +12,13 @@ function App() {
   }, []);
   return (
     <div>
-      <BrowserRouter>
+      <HashRouter>
         {showSpinner && <Spinner />}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="instance/:id" element={<Home />} />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </div>
   );
 }

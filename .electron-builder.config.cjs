@@ -9,21 +9,28 @@
  * @see https://www.electron.build/configuration/configuration
  */
 module.exports = async function () {
-  const {getVersion} = await import('./version/getVersion.mjs');
+  const { getVersion } = await import("./version/getVersion.mjs");
 
   return {
     directories: {
-      output: 'dist',
-      buildResources: 'buildResources',
+      output: "dist",
+      buildResources: "buildResources"
     },
-    files: ['packages/**/dist/**'],
+    files: ["packages/**/dist/**"],
+    extraFiles: [
+      {
+        from: "packages/main/src/modules",
+        to: "packages/main/src/modules",
+        filter: ["**/*"]
+      }
+    ],
     extraMetadata: {
-      version: getVersion(),
+      version: getVersion()
     },
 
     // Specify linux target just for disabling snap compilation
     linux: {
-      target: 'deb',
-    },
+      target: "deb"
+    }
   };
 };
