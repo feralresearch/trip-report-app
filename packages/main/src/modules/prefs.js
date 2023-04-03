@@ -53,12 +53,11 @@ const prefs = {
     }
     return defaults;
   },
-  load: (pathToPrefs = null) => {
-    if (!pathToPrefs && !app) return;
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve) => {
-      const _prefsFile = pathToPrefs ? pathToPrefs : prefsFile;
-      return await fs.readFile(_prefsFile, "utf-8", async (err, data) => {
+  load: (pathToPrefs = "") => {
+    if (pathToPrefs === "" && !app) return;
+    return new Promise((resolve) => {
+      const _prefsFile = pathToPrefs !== "" ? pathToPrefs : prefsFile;
+      return fs.readFile(_prefsFile, "utf-8", async (err, data) => {
         if (err) {
           console.log(`WARN: Writing defaults to ${_prefsFile}`);
           await prefs.save(prefs.default());

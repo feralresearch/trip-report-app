@@ -12,6 +12,7 @@ import "./security-restrictions";
 import { restoreOrCreateWindow } from "/@/mainWindow";
 import ACTIONS from "./actions.js";
 import icon from "../../../buildResources/icon_19x19.png";
+import type { ChildProcess } from "child_process";
 import { fork } from "child_process";
 import { fileNameToPath } from "./modules/vrcScreenshots.js";
 import * as fs from "fs";
@@ -94,7 +95,7 @@ app.whenReady().then(async () => {
 });
 
 // Create the application window when the background process is ready.
-let logWatcherProcess: unknown;
+let logWatcherProcess: ChildProcess;
 app
   .whenReady()
   .then(async () => {
@@ -122,7 +123,7 @@ if (import.meta.env.PROD) {
     .then((module) => {
       const autoUpdater =
         module.autoUpdater ||
-        (module.default.autoUpdater as (typeof module)["autoUpdater"]);
+        (module.default.autoUpdater as typeof module["autoUpdater"]);
       return autoUpdater.checkForUpdatesAndNotify();
     })
     .catch((e) => console.error("Failed check updates:", e));
@@ -249,7 +250,7 @@ app.whenReady().then(async () => {
   ipcMain.handle(ACTIONS.STATISTICS_GET, async () => {
     try {
       const stats = knex ? await knex.select("*").from("statistics") : null;
-      return stats[0];
+      return stats ? stats[0] : null;
     } catch (e) {
       return {};
     }
@@ -257,10 +258,9 @@ app.whenReady().then(async () => {
 
   ipcMain.handle(ACTIONS.INSTANCES_GET, async () => {
     try {
-      const instances = await knex
-        .select("*")
-        .from("instance_list")
-        .orderBy("ts", "desc");
+      const instances = knex
+        ? await knex.select("*").from("instance_list").orderBy("ts", "desc")
+        : [];
       return instances.map((instance) => ({
         ...instance,
         data: JSON.parse(instance.data)
@@ -272,12 +272,14 @@ app.whenReady().then(async () => {
 
   ipcMain.handle(ACTIONS.INSTANCE_GET, async (_event, id) => {
     try {
-      const logEntries = await knex
-        .select("*")
-        .from("log")
-        .where("instance", "=", id)
-        .andWhereRaw("tag IS NOT NULL")
-        .orderBy("ts");
+      const logEntries = knex
+        ? await knex
+            .select("*")
+            .from("log")
+            .where("instance", "=", id)
+            .andWhereRaw("tag IS NOT NULL")
+            .orderBy("ts")
+        : [];
       return logEntries.map((entry) => ({
         ...entry,
         data: JSON.parse(entry.data)
@@ -291,9 +293,10 @@ app.whenReady().then(async () => {
     return preferences;
   });
 
-  const debounce = (callback, time) => {
-    global.clearTimeout(global.debounceTimer);
-    global.debounceTimer = global.setTimeout(callback, time);
+  let debounceTimer: NodeJS.Timeout;
+  const debounce = (callback: () => void, time: number) => {
+    global.clearTimeout(debounceTimer);
+    debounceTimer = global.setTimeout(callback, time);
   };
 
   ipcMain.handle(ACTIONS.PREFERENCES_SET, async (_event, partialPrefs) => {
