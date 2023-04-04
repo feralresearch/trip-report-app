@@ -27,3 +27,8 @@ https://github.com/node-ffi-napi/node-ffi-napi
 ## Troubleshooting Actions
 
 act -W ./.github/workflows/release.yml
+DEBUG=electron-builder npx --no-install electron-builder --config .electron-builder.config.cjs
+
+npm exec --package=electron-builder -- electron-builder --config .electron-builder.config.cjs
+
+V2
