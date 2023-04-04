@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ windows-latest ]
+        os: [ ubuntu-latest, windows-latest ]
 
     runs-on: ${{ matrix.os }}
 
@@ -33,10 +33,10 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 16.15 # Need for npm >=7.7
+          node-version: 16.15 # Locked for ffmap
           cache: 'npm'
 
-      - run: npm ci -verbose
+      - run: npm ci
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 
@@ -51,7 +51,7 @@ jobs:
           retry_wait_seconds: 15
           retry_on: error
           shell: 'bash'
-          command: npx --no-install electron-builder --config .electron-builder.config.cjs --publish ${{ inputs.dry-run && 'never' || 'always' }}
+          command: npm exec --package=electron-builder -- electron-builder --config .electron-builder.config.cjs --publish ${{ inputs.dry-run && 'never' || 'always' }}
         env:
           # Code Signing params
           # See https://www.electron.build/code-signing
