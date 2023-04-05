@@ -25,11 +25,15 @@ const _ingestScreenshot = (screenshot, directoryCache, onLog, forceRebuild) => {
       try {
         fs.copyFile(
           found[0].replace(".png", "_Environment.png"),
-          screenshot.original.replace(".png", "_Environment.png")
+          screenshot.original.replace(".png", "_Environment.png"),
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          () => {}
         );
         fs.copyFile(
           found[0].replace(".png", "_Player.png"),
-          screenshot.original.replace(".png", "_Player.png")
+          screenshot.original.replace(".png", "_Player.png"),
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          () => {}
         );
       } catch (e) {
         console.log(e);

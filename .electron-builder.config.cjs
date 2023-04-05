@@ -22,6 +22,11 @@ module.exports = async function () {
         from: "packages/main/src/modules",
         to: "packages/main/src/modules",
         filter: ["**/*"]
+      },
+      {
+        from: "packages/main/src/standalone",
+        to: "packages/main/src/standalone",
+        filter: ["**/*"]
       }
     ],
     extraMetadata: {
