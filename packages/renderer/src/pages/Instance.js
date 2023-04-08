@@ -25,11 +25,11 @@ const Instance = () => {
 
   if (isLoading || !data) return <Spinner showPercentage={false} />;
 
-  const info = data?.filter((datum) => datum.tag === "world_enter")[0].data;
+  const info = data?.filter((datum) => datum.tag === "world_enter")[0]?.data;
   const players = data?.filter((datum) => datum.tag === "player");
   const media = data?.filter((datum) => datum.tag === "media");
   const screenshots = data?.filter((datum) => datum.tag === "screenshot");
-
+  if (!info) return null;
   return (
     <div>
       <div>

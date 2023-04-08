@@ -53,5 +53,5 @@ if (!isWin || (isWin && !isRunning)) _processLogFiles();
 if (preferences.watcherEnabled)
   initializeWatcher({
     processName: preferences.vrcProcessName,
-    _processLogFiles
+    onProcess: _processLogFiles
   });
