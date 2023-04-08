@@ -91,7 +91,7 @@ const vrcScreenshots = {
       (file) => path.extname(file) === ".png"
     );
     console.log(
-      `         ...${directoryCache.length} files. Took ${(
+      `            ...${directoryCache.length} files. Took ${(
         (performance.now() - startTime) *
         0.001
       ).toFixed(0)} seconds`

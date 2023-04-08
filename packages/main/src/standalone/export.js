@@ -7,6 +7,9 @@ const zip = new AdmZip();
 import prefs from "../modules/prefs.js";
 import { knexInit } from "../modules/knex/knexfile.js";
 
+console.log("NOT SAFE");
+exit();
+
 const prefsFile = process.argv[2];
 const id = process.argv[3];
 const dst = process.argv[4];

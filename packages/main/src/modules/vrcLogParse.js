@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { buildDirectoryCache, ingestScreenshots } from "./vrcScreenshots.js";
 import { importRecords } from "./vrcLogImport.js";
 import { makeDir } from "./util.js";
+import { ACTIONS, ipcSend } from "../actions.js";
 
 const _annotateLogData = ({ preferences, data, file }) => {
   let currentWorldId, currentWorldName, instanceId;
@@ -153,7 +154,7 @@ const vrcLogParse = {
     await new Promise((res) => lineReader.once("close", res));
     if (preferences.debugMode)
       console.log(
-        `PARSE: ${path.basename(file)} - ${
+        `PARSER: ${path.basename(file)} - ${
           jsonData.length
         } records - HEAP: ${Math.round(
           process.memoryUsage().heapUsed / 1024 / 1024
@@ -163,57 +164,63 @@ const vrcLogParse = {
       ? _annotateLogData({ preferences, data: jsonData, file })
       : jsonData;
   },
-  processLogfiles: ({ knex, preferences, onLog }) => {
+  processLogfiles: ({ knex, preferences, onLog, onComplete }) => {
     if (!preferences.vrcLogDir.length) return;
     const directoryCache = buildDirectoryCache(preferences.vrcScreenshotDir);
     fs.promises
       .readdir(preferences.vrcLogDir)
       .then(async (files) => {
         const logFiles = files.filter((file) => file.includes(".txt"));
+        if (logFiles.length === 0) {
+          onComplete();
+        } else {
+          for (const logFile of logFiles) {
+            const file = path.join(preferences.vrcLogDir, logFile);
+            const jsonData = await convertToJson(file, preferences);
+            const id = file.replace(".json", "");
 
-        for (const logFile of logFiles) {
-          const file = path.join(preferences.vrcLogDir, logFile);
-          const jsonData = await convertToJson(file, preferences);
-          const id = file.replace(".json", "");
-          if (preferences.debugMode) {
-            console.log(`PROCESSING: ${id}`);
-            console.log(file);
-          }
-
-          await importRecords({
-            knex,
-            id,
-            jsonData,
-            onLog
-          });
-
-          if (preferences.screenshotsManage)
-            ingestScreenshots({
-              assetList: jsonData.filter((item) => item.tag === "screenshot"),
-              directoryCache,
-              onLog,
-              preferences
-            });
-
-          const removeAfterImport = () => {
-            if (preferences.watcherRemoveAfterImport) {
-              if (preferences.debugMode)
-                console.log(`REMOVING LOGFILE: ${file}`);
-              fs.unlinkSync(file);
+            if (preferences.debugMode) {
+              console.log("PARSER: Processing...");
+              console.log(`   ${id}`);
+              console.log(`   ${file}`);
             }
-          };
-          if (preferences.watcherBackupAfterImport) {
-            const fileName = path.basename(file);
-            const backupDir = path.join(preferences.dataDir, "backup");
-            makeDir(backupDir);
-            fs.copyFile(file, path.join(backupDir, fileName), (err) => {
-              if (err) return;
-              removeAfterImport();
+
+            await importRecords({
+              knex,
+              id,
+              jsonData,
+              onLog
             });
-            if (preferences.debugMode)
-              console.log(`BACKING UP LOGFILE: ${fileName}`);
-          } else {
-            removeAfterImport();
+
+            if (preferences.screenshotsManage)
+              ingestScreenshots({
+                assetList: jsonData.filter((item) => item.tag === "screenshot"),
+                directoryCache,
+                onLog,
+                preferences
+              });
+
+            const _onComplete = () => {
+              if (preferences.watcherRemoveAfterImport) {
+                if (preferences.debugMode)
+                  console.log(`PARSER: REMOVING LOGFILE: ${file}`);
+                fs.unlinkSync(file);
+              }
+              onComplete();
+            };
+            if (preferences.watcherBackupAfterImport) {
+              const fileName = path.basename(file);
+              const backupDir = path.join(preferences.dataDir, "backup");
+              makeDir(backupDir);
+              fs.copyFile(file, path.join(backupDir, fileName), (err) => {
+                if (err) return;
+                _onComplete();
+              });
+              if (preferences.debugMode)
+                console.log(`PARSER: BACKING UP LOGFILE: ${fileName}`);
+            } else {
+              _onComplete();
+            }
           }
         }
       })

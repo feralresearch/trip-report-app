@@ -84,6 +84,6 @@
     "uuid": "^9.0.0"
   },
   "optionalDependencies": {
-    "wql-process-monitor": "^2.1.1"
+    "wql-process-monitor":"^3.0.0"
   }
 }

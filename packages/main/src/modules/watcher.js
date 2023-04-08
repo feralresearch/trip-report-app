@@ -1,23 +1,14 @@
+// If WQL hangs, you can reliably un-stick it by restarting "Windows Management Instrumentation" in "Services" panel
+
 import os from "os";
 const isWin = os.platform() === "win32";
 import readline from "readline";
-
-let subscribe, closeEventSink;
-import("wql-process-monitor/promises")
-  .then((WQL) => {
-    subscribe = WQL.subscribe;
-    closeEventSink = WQL.closeEventSink;
-  })
-  .catch((e) => {
-    console.log(e);
-  });
-
-// If WQL hangs, you can reliably un-stick it by restarting "Windows Management Instrumentation" in "Services" panel
+import { subscribe, closeEventSink } from "wql-process-monitor";
 
 // Without closeEventSink, WQL locks up
 const terminate = (e) => {
   if (isWin) {
-    console.log("WATCHER: Close Event Sink");
+    console.log("WATCHER: Goodbye!");
     closeEventSink().then(() => {
       if (e?.stack) console.log(e.stack);
       process.exit();
@@ -44,8 +35,12 @@ process.on("message", (msg) => {
 });
 
 export const initializeWatcher = ({ processName, onProcess }) => {
-  if (!isWin) return console.log("WARNING: Watcher only works on Windows!");
-  if (!processName) return console.log("WARNING: Need to specify process name");
+  if (!isWin)
+    return console.log("WATCHER: WARNING: Watcher only works on Windows!");
+  if (!processName)
+    return console.log("WATCHER: WARNING: Need to specify process name");
+
+  console.log(`WATCHER: Filter on ${processName}`);
   const retryIn = 2000;
   const maxRetries = 10;
   let retryCounter = 0;
@@ -55,17 +50,21 @@ export const initializeWatcher = ({ processName, onProcess }) => {
         ? await subscribe({
             creation: true,
             deletion: true,
-            filter: [processName],
-            whitelist: true
+            bin: {
+              filter: [processName],
+              whitelist: true
+            }
           })
         : null;
 
       processMonitor.on("creation", ([process, pid, filepath, user]) => {
-        console.log(`VRCStarted: ${process}::${pid}(${user}) ["${filepath}"]`);
+        console.log(
+          `WATCHER: >>> Started ${process}::${pid}(${user}) ["${filepath}"]`
+        );
       });
 
       processMonitor.on("deletion", ([process, pid]) => {
-        console.log(`VRCStopped: ${process}::${pid}`);
+        console.log(`WATCHER: <<< Stopped: ${process}::${pid}`);
         onProcess();
       });
       console.log(`WATCHER: OK! Subscription to ${processName}`);
@@ -74,10 +73,11 @@ export const initializeWatcher = ({ processName, onProcess }) => {
       const ms = retryIn + retryIn * retryCounter;
       retryCounter++;
       console.log(
-        `ERROR (Watcher): *** WQL to ${processName} failed, retry (${retryCounter}) in ${
+        `WATCHER: *** ERROR *** WQL to ${processName} failed, retry (${retryCounter}) in ${
           ms / 1000
         }s...`
       );
+      console.log(e);
       setTimeout(() => registerWatch(), ms);
       return false;
     }
