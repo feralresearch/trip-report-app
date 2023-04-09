@@ -36,7 +36,7 @@ const _ingestScreenshot = (screenshot, directoryCache, onLog, forceRebuild) => {
           () => {}
         );
       } catch (e) {
-        console.log(e);
+        console.error(e);
       }
     } else {
       onLog(`SCREENSHOT WARN: Cannot locate: ${screenshot.fileName}`);
@@ -71,9 +71,9 @@ const vrcScreenshots = {
         };
     return metaData;
   },
-  buildDirectoryCache: (vrcScreenshotDir) => {
+  buildDirectoryCache: ({ vrcScreenshotDir, onLog }) => {
     if (!vrcScreenshotDir) {
-      console.log("ERROR: Please specify a screenshot directory");
+      onLog("ERROR: Please specify a screenshot directory");
       return null;
     }
     const findApi = new fdir()
@@ -82,16 +82,14 @@ const vrcScreenshots = {
       .withBasePath()
       .withDirs()
       .crawl(vrcScreenshotDir);
-    console.log(
-      `SCREENSHOT: CACHING (Might take a while..): ${vrcScreenshotDir}`
-    );
+    onLog(`SCREENSHOT: CACHING (Might take a while...): ${vrcScreenshotDir}`);
     let startTime = performance.now();
     let directoryCache = findApi.sync();
     directoryCache = directoryCache.filter(
       (file) => path.extname(file) === ".png"
     );
-    console.log(
-      `            ...${directoryCache.length} files. Took ${(
+    onLog(
+      `SCREENSHOT: CACHING ...${directoryCache.length} files. Took ${(
         (performance.now() - startTime) *
         0.001
       ).toFixed(0)} seconds`
@@ -105,7 +103,8 @@ const vrcScreenshots = {
     preferences
   }) => {
     if (assetList.length === 0) return;
-    if (!directoryCache) directoryCache = vrcScreenshots.buildDirectoryCache();
+    if (!directoryCache)
+      directoryCache = vrcScreenshots.buildDirectoryCache({ onLog });
     return assetList.map((item) => {
       const logged = item.event.split("screenshot to: ")[1];
       if (!logged) return null;

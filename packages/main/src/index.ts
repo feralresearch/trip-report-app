@@ -83,11 +83,15 @@ prefs.load()?.then((preferences) => {
               console.log("DB: LOCK GIVEN BY PARENT PROCESS");
             });
             break;
+
           case ACTIONS.DB_LOCK_RELEASE:
+            window.webContents.send(action);
             console.log("DB: LOCK RELEASED BY CHILD PROCESS");
             knex = knexInit(preferences.dataDir);
             break;
+
           default:
+            window.webContents.send(action);
             console.log(`WARNING: Unhandled action ${action}`);
         }
       });
@@ -314,6 +318,12 @@ prefs.load()?.then((preferences) => {
 
       ipcMain.handle(ACTIONS.PREFERENCES_GET, async () => {
         return preferences;
+      });
+
+      ipcMain.handle(ACTIONS.REQUEST_MANUAL_SCAN, () => {
+        logWatcherProcess.send(
+          JSON.stringify({ action: ACTIONS.INVOKE_MANUAL_SCAN })
+        );
       });
 
       let debounceTimer: NodeJS.Timeout;

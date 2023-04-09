@@ -10,7 +10,7 @@ export const formConfig = [
     display: "Show in taskbar",
     tooltip:
       "Display a taskbar icon for the trip report window when it is open",
-    hidden: false
+    hidden: true
   },
   {
     key: "vrcProcessName",

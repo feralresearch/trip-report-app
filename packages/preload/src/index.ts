@@ -16,6 +16,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onIsWorkingUpdate: (
     cb: (event: Electron.IpcRendererEvent, ...args: []) => void
   ) => addListener(ACTIONS.PROGRESS, cb),
+  onScanComplete: (
+    cb: (event: Electron.IpcRendererEvent, ...args: []) => void
+  ) => addListener(ACTIONS.DB_LOCK_RELEASE, cb),
+  onWatcherGoOnline: (
+    cb: (event: Electron.IpcRendererEvent, ...args: []) => void
+  ) => addListener(ACTIONS.WATCHER_ONLINE, cb),
+  onWatcherGoOffline: (
+    cb: (event: Electron.IpcRendererEvent, ...args: []) => void
+  ) => addListener(ACTIONS.WATCHER_OFFLINE, cb),
   onLogEvent: (cb: (event: Electron.IpcRendererEvent, ...args: []) => void) =>
     addListener(ACTIONS.LOG, cb)
 });
@@ -33,5 +42,6 @@ contextBridge.exposeInMainWorld("databaseAPI", {
     ipcRenderer.invoke(ACTIONS.PREFERENCES_SET, partialPrefs),
   preferencesGetPath: () => ipcRenderer.invoke(ACTIONS.PREFERENCES_PATH),
   bulkImport: (options: string) =>
-    ipcRenderer.invoke(ACTIONS.BULK_IMPORT, options)
+    ipcRenderer.invoke(ACTIONS.BULK_IMPORT, options),
+  requestScan: () => ipcRenderer.invoke(ACTIONS.REQUEST_MANUAL_SCAN)
 });

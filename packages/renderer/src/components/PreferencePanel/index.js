@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { formConfig } from "./formConfig.js";
+import packageJson from "../../../../../package.json";
 
 const PreferencePanel = () => {
   const [preferences, setPreferences] = useState(null);
@@ -30,9 +31,24 @@ const PreferencePanel = () => {
     window.databaseAPI.preferencesSet(currentVals);
   };
 
+  const InfoPanel = () => (
+    <div
+      style={{ display: "flex", flexDirection: "column", fontSize: ".8rem" }}
+    >
+      <div style={{ display: "flex", flexDirection: "row" }}>
+        <div style={{ width: "3rem" }}>Version:</div>
+        <div style={{ opacity: 0.5 }}> {packageJson.version}</div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "row" }}>
+        <div style={{ width: "3rem" }}>Config:</div>
+        <div style={{ opacity: 0.5 }}> {prefsPath}</div>
+      </div>
+    </div>
+  );
+
   return (
-    <div>
-      {prefsPath}
+    <div style={{}}>
+      <InfoPanel />
       {formConfig.map((config, idx) => {
         const { key, display, hidden, tooltip } = config;
         if (!hidden)

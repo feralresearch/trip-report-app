@@ -1,30 +1,60 @@
+const configPanel = {
+  boxSizing: "border-box",
+  position: "absolute",
+  background: "rgb(155, 154, 154)",
+  width: "100%",
+  bottom: "0px",
+  overflow: "hidden",
+  borderTop: "7px solid rgba(0, 0, 0, 0.1)",
+  height: "10rem",
+  zIndex: 2
+};
+
+const sidebar = {
+  boxSizing: "border-box",
+  position: "absolute",
+  width: "20rem",
+  maxWidth: "100vw",
+  boxShadow: " rgba(0, 0, 0, 0.16) 0px 1px 4px",
+  overflow: "hidden",
+  background: "white",
+  height: "calc(100vh - 2rem)",
+  padding: "1rem"
+};
+
+const mainPage = {
+  boxSizing: "border-box",
+  position: "absolute",
+  background: "#eeeeee",
+  height: "calc(99.7vh - 2rem)",
+  width: "calc(100vw - 20rem)",
+  left: "20rem",
+  overflow: "scroll"
+};
+
 const styles = {
   wrapper: {
-    position: "relative",
-    top: 0,
-    left: 0,
-    bottom: 0,
-    background: "blue"
+    position: "relative"
+  },
+  configPanelOpen: {
+    ...configPanel,
+    height: "20rem"
+  },
+  configPanelClosed: {
+    ...configPanel,
+    height: "2rem"
   },
   sidebar: {
-    position: "fixed",
-    width: "20rem",
-    maxWidth: "100vw",
-    padding: "1rem",
-    boxShadow: " rgba(0, 0, 0, 0.16) 0px 1px 4px",
-    overflow: "hidden",
-    background: "white"
+    ...sidebar
+  },
+  sidebarWithConfig: {
+    ...sidebar
   },
   mainPage: {
-    position: "fixed",
-    background: "#eeeeee",
-    top: 0,
-    height: "100vh",
-    width: "calc(100vw - 25rem)",
-    left: "22rem",
-    margin: "0",
-    padding: "1.5rem",
-    overflow: "scroll"
+    ...mainPage
+  },
+  mainPageWithConfig: {
+    ...mainPage
   },
   container: {
     margin: "auto",
@@ -62,6 +92,21 @@ const styles = {
     fontWeight: 900,
     borderRadius: "0.3rem",
     border: 0
+  },
+  logViewer: {
+    fontSize: ".7rem",
+    height: "17rem",
+    fontWeight: 900,
+    width: "100%",
+    fontFamily: "courier",
+    backgroundColor: "#ffffff",
+    color: "#00000094",
+    boxSizing: "border-box",
+    border: "1px solid #646464",
+    borderRadius: "0.3rem",
+    margin: "0rem 1rem 0 1rem",
+    resize: "none",
+    outline: "none"
   }
 };
 export default styles;

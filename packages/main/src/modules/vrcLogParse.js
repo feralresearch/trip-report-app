@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from "uuid";
 import { buildDirectoryCache, ingestScreenshots } from "./vrcScreenshots.js";
 import { importRecords } from "./vrcLogImport.js";
 import { makeDir } from "./util.js";
-import { ACTIONS, ipcSend } from "../actions.js";
 
 const _annotateLogData = ({ preferences, data, file }) => {
   let currentWorldId, currentWorldName, instanceId;
@@ -108,7 +107,7 @@ const _annotateLogData = ({ preferences, data, file }) => {
 };
 
 const vrcLogParse = {
-  convertToJson: async (file, preferences) => {
+  convertToJson: async ({ onLog, file, preferences }) => {
     let idx = 0;
     const jsonData = [];
     const input = fs.createReadStream(file);
@@ -153,7 +152,7 @@ const vrcLogParse = {
     });
     await new Promise((res) => lineReader.once("close", res));
     if (preferences.debugMode)
-      console.log(
+      onLog(
         `PARSER: ${path.basename(file)} - ${
           jsonData.length
         } records - HEAP: ${Math.round(
@@ -166,23 +165,27 @@ const vrcLogParse = {
   },
   processLogfiles: ({ knex, preferences, onLog, onComplete }) => {
     if (!preferences.vrcLogDir.length) return;
-    const directoryCache = buildDirectoryCache(preferences.vrcScreenshotDir);
+    const directoryCache = buildDirectoryCache({
+      onLog,
+      vrcScreenshotDir: preferences.vrcScreenshotDir
+    });
     fs.promises
       .readdir(preferences.vrcLogDir)
       .then(async (files) => {
         const logFiles = files.filter((file) => file.includes(".txt"));
         if (logFiles.length === 0) {
+          onLog("PARSER: Nothing to process");
           onComplete();
         } else {
           for (const logFile of logFiles) {
             const file = path.join(preferences.vrcLogDir, logFile);
-            const jsonData = await convertToJson(file, preferences);
+            const jsonData = await convertToJson({ onLog, file, preferences });
             const id = file.replace(".json", "");
 
             if (preferences.debugMode) {
-              console.log("PARSER: Processing...");
-              console.log(`   ${id}`);
-              console.log(`   ${file}`);
+              onLog("PARSER: Processing...");
+              onLog(`   ${id}`);
+              onLog(`   ${file}`);
             }
 
             await importRecords({
@@ -203,7 +206,7 @@ const vrcLogParse = {
             const _onComplete = () => {
               if (preferences.watcherRemoveAfterImport) {
                 if (preferences.debugMode)
-                  console.log(`PARSER: REMOVING LOGFILE: ${file}`);
+                  onLog(`PARSER: REMOVING LOGFILE: ${file}`);
                 fs.unlinkSync(file);
               }
               onComplete();
@@ -217,7 +220,7 @@ const vrcLogParse = {
                 _onComplete();
               });
               if (preferences.debugMode)
-                console.log(`PARSER: BACKING UP LOGFILE: ${fileName}`);
+                onLog(`PARSER: BACKING UP LOGFILE: ${fileName}`);
             } else {
               _onComplete();
             }
@@ -225,7 +228,7 @@ const vrcLogParse = {
         }
       })
       .catch((err) => {
-        console.log(err);
+        console.error(err);
       });
   }
 };

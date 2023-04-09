@@ -1,5 +1,5 @@
 // If WQL hangs, you can reliably un-stick it by restarting "Windows Management Instrumentation" in "Services" panel
-
+import { ACTIONS, ipcSend } from "../actions.js";
 import os from "os";
 const isWin = os.platform() === "win32";
 import readline from "readline";
@@ -34,13 +34,12 @@ process.on("message", (msg) => {
   if (msg === "SIGINT") terminate();
 });
 
-export const initializeWatcher = ({ processName, onProcess }) => {
-  if (!isWin)
-    return console.log("WATCHER: WARNING: Watcher only works on Windows!");
+export const initializeWatcher = ({ onLog, processName, onProcess }) => {
+  if (!isWin) return onLog("WATCHER: WARNING: Watcher only works on Windows!");
   if (!processName)
-    return console.log("WATCHER: WARNING: Need to specify process name");
+    return onLog("WATCHER: WARNING: Need to specify process name");
 
-  console.log(`WATCHER: Filter on ${processName}`);
+  onLog(`WATCHER: Filter on ${processName}`);
   const retryIn = 2000;
   const maxRetries = 10;
   let retryCounter = 0;
@@ -58,26 +57,28 @@ export const initializeWatcher = ({ processName, onProcess }) => {
         : null;
 
       processMonitor.on("creation", ([process, pid, filepath, user]) => {
-        console.log(
+        onLog(
           `WATCHER: >>> Started ${process}::${pid}(${user}) ["${filepath}"]`
         );
       });
 
       processMonitor.on("deletion", ([process, pid]) => {
-        console.log(`WATCHER: <<< Stopped: ${process}::${pid}`);
+        onLog(`WATCHER: <<< Stopped: ${process}::${pid}`);
         onProcess();
       });
-      console.log(`WATCHER: OK! Subscription to ${processName}`);
+      onLog(`WATCHER: OK! Subscription to ${processName}`);
+      ipcSend(ACTIONS.WATCHER_ONLINE);
     } catch (e) {
+      ipcSend(ACTIONS.WATCHER_OFFLINE);
       if (retryCounter > maxRetries) process.emit("SIGINT");
       const ms = retryIn + retryIn * retryCounter;
       retryCounter++;
-      console.log(
+      onLog(
         `WATCHER: *** ERROR *** WQL to ${processName} failed, retry (${retryCounter}) in ${
           ms / 1000
         }s...`
       );
-      console.log(e);
+      console.error(e);
       setTimeout(() => registerWatch(), ms);
       return false;
     }

@@ -27,7 +27,7 @@ export default function Spinner({ showPercentage = true }) {
         width: "100%",
         background: "#000000",
         opacity: 0.7,
-        zIndex: 3,
+        zIndex: 1,
         display: "flex",
         textAlign: "center",
         overflow: "hidden"
