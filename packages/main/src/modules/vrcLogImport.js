@@ -1,5 +1,3 @@
-import { ACTIONS, ipcSend } from "../actions.js";
-
 const vrcLogImport = {
   importRecords: ({ knex, id, jsonData, onLog }) => {
     const chunkSize = 500;

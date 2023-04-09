@@ -6,7 +6,7 @@ import { AppContext } from "../App";
 import styles from "../pages/styles";
 import { BsGear } from "react-icons/bs";
 import { RxActivityLog, RxReload } from "react-icons/rx";
-import { FiTool } from "react-icons/fi";
+//import { FiTool } from "react-icons/fi";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 import packageJson from "../../../../package.json";
 
