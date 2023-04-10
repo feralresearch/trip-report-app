@@ -28,7 +28,12 @@ onLog(
 
 let isBusy = false;
 process.on("message", (m) => {
-  const message = JSON.parse(m);
+  let message;
+  try {
+    message = JSON.parse(m);
+  } catch {
+    message = m;
+  }
   const knex = knexInit(preferences.dataDir);
   if (message.action == ACTIONS.INVOKE_MANUAL_SCAN) {
     if (isBusy) {

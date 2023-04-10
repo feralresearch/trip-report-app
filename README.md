@@ -35,8 +35,12 @@ V2
 
 http://book.mixu.net/node/
 
-
 ## Release
+
 update package.json
 git tag vX.X.X
 git push --tags
+
+## Config
+
+C:\Users\An\AppData\Roaming\TripReport\config.json

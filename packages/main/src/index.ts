@@ -66,34 +66,9 @@ prefs.load()?.then((preferences) => {
         }
       });
 
-      logWatcherProcess.removeAllListeners();
-
       logWatcherProcess.on("message", async (m: string) => {
         const { action, payload } = JSON.parse(m);
-        switch (action) {
-          case ACTIONS.LOG:
-            window.webContents.send(action, payload);
-            break;
-          case ACTIONS.DB_LOCK_REQUEST:
-            console.log("DB: LOCK REQUESTED BY CHILD PROCESS");
-            knex?.destroy(() => {
-              logWatcherProcess.send(
-                JSON.stringify({ action: ACTIONS.DB_LOCK_GIVEN })
-              );
-              console.log("DB: LOCK GIVEN BY PARENT PROCESS");
-            });
-            break;
-
-          case ACTIONS.DB_LOCK_RELEASE:
-            window.webContents.send(action);
-            console.log("DB: LOCK RELEASED BY CHILD PROCESS");
-            knex = knexInit(preferences.dataDir);
-            break;
-
-          default:
-            window.webContents.send(action);
-            console.log(`WARNING: Unhandled action ${action}`);
-        }
+        window.webContents.send(action, payload);
       });
 
       logWatcherProcess.on("close", (code: number) => {
@@ -133,17 +108,47 @@ prefs.load()?.then((preferences) => {
             [prefs.prefsFile ? prefs.prefsFile : ""]
           );
 
+          logWatcherProcess.removeAllListeners();
+
+          logWatcherProcess.on("message", async (m: string) => {
+            const { action, payload } = JSON.parse(m);
+            switch (action) {
+              case ACTIONS.DB_LOCK_REQUEST:
+                console.log("DB: LOCK REQUESTED BY CHILD PROCESS");
+                knex?.destroy(() => {
+                  logWatcherProcess.send(
+                    JSON.stringify({ action: ACTIONS.DB_LOCK_GIVEN })
+                  );
+                  console.log("DB: LOCK GIVEN BY PARENT PROCESS");
+                });
+                break;
+
+              case ACTIONS.DB_LOCK_RELEASE:
+                console.log("DB: LOCK RELEASED BY CHILD PROCESS");
+                knex = knexInit(preferences.dataDir);
+                break;
+
+              default:
+                console.log(`WARNING: Unhandled action ${action}`);
+            }
+          });
+
+          logWatcherProcess.on("close", (code: number) => {
+            console.log(`ERROR: WATCHER CRASHED: exit code ${code}`);
+          });
+
           // NOTE: On windows, there is no way to fire this with ctrl-c during dev >.<
           app.on("quit", () => {
             if (isWin) logWatcherProcess.send("SIGINT");
           });
         }
-        //if open on launch
+        // Open on launch
         launchMainWindow();
       })
       .catch((e) => console.error("Failed create window:", e));
 
     // Check for new version of the application - production mode only.
+    /*
     if (import.meta.env.PROD) {
       app
         .whenReady()
@@ -156,6 +161,7 @@ prefs.load()?.then((preferences) => {
         })
         .catch((e) => console.error("Failed check updates:", e));
     }
+    */
 
     // Create custom protocol for local media loading
     app.whenReady().then(async () => {
