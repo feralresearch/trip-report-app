@@ -22,7 +22,14 @@ const LogPanel = () => {
       }}
     >
       <div style={{ display: "flex", alignContent: "center", width: "100vw" }}>
-        <div style={{ position: "absolute", right: "1.5rem", top: "2rem" }}>
+        <div
+          style={{
+            position: "absolute",
+            right: "1.5rem",
+            top: "3rem",
+            zIndex: 1
+          }}
+        >
           <RxReload onClick={() => window.databaseAPI.requestScan()} />
         </div>
         <textarea readOnly style={styles.logViewer} value={log?.join("\n")} />
@@ -63,6 +70,7 @@ const StatisticsPanel = ({ data }) => {
 const Config = ({ onTogglePanel, isOpen, watcherOnline }) => {
   const [data, setData] = useState(null);
   const [tabIndex, setTabIndex] = useState(0);
+  const [restartNeeded, setRestartNeeded] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
       const data = await window.databaseAPI.statisticsGet();
@@ -75,15 +83,29 @@ const Config = ({ onTogglePanel, isOpen, watcherOnline }) => {
     <React.Fragment>
       <div
         style={{
+          position: "absolute",
+          width: "100vw",
           display: "flex",
           flexDirection: "row",
-          alignItems: "center"
+          alignItems: "center",
+          backgroundColor: "#8b8b8b",
+          marginBottom: "1rem"
         }}
       >
-        <div style={{ margin: ".2rem" }} onClick={onTogglePanel}>
+        <div onClick={onTogglePanel} style={{ margin: ".2rem" }}>
           {isOpen ? <FaChevronDown /> : <FaChevronRight />}
         </div>
-        <div style={{ flexGrow: 1 }} />
+        <div
+          onClick={onTogglePanel}
+          style={{
+            flexGrow: 1,
+            color: "#6c0d0d",
+            fontWeight: 900,
+            margin: "-.5rem 0 0 0"
+          }}
+        >
+          &nbsp; {restartNeeded && <span>Restart to apply changes</span>}
+        </div>
         <div
           style={{ fontSize: "0.8rem", opacity: 0.5, margin: "-.3rem 0 0 0" }}
         >
@@ -115,10 +137,18 @@ const Config = ({ onTogglePanel, isOpen, watcherOnline }) => {
             </div>
           </React.Fragment>
         )}
-      </div>{" "}
-      {tabIndex === 0 && <LogPanel />}
-      {tabIndex === 1 && <StatisticsPanel data={data} />}
-      {tabIndex === 2 && <PreferencePanel />}
+      </div>
+      <div
+        style={{
+          paddingTop: "2.5rem"
+        }}
+      >
+        {tabIndex === 0 && <LogPanel />}
+        {tabIndex === 1 && <StatisticsPanel data={data} />}
+        {tabIndex === 2 && (
+          <PreferencePanel onChange={() => setRestartNeeded(true)} />
+        )}
+      </div>
     </React.Fragment>
   );
 };

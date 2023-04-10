@@ -38,11 +38,11 @@ const styles = {
   },
   configPanelOpen: {
     ...configPanel,
-    height: "20rem"
+    height: "30rem"
   },
   configPanelClosed: {
     ...configPanel,
-    height: "2rem"
+    height: "2.2rem"
   },
   sidebar: {
     ...sidebar
@@ -94,19 +94,21 @@ const styles = {
     border: 0
   },
   logViewer: {
+    position: "relative",
+    margin: "auto",
     fontSize: ".7rem",
-    height: "17rem",
+    height: "26.2rem",
     fontWeight: 900,
-    width: "100%",
+    width: "calc(100% - 2rem)",
     fontFamily: "courier",
     backgroundColor: "#ffffff",
     color: "#00000094",
     boxSizing: "border-box",
     border: "1px solid #646464",
     borderRadius: "0.3rem",
-    margin: "0rem 1rem 0 1rem",
     resize: "none",
-    outline: "none"
+    outline: "none",
+    padding: "0.5rem"
   }
 };
 export default styles;

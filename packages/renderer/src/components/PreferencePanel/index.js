@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { formConfig } from "./formConfig.js";
 import packageJson from "../../../../../package.json";
 
-const PreferencePanel = () => {
+const PreferencePanel = ({ onChange }) => {
   const [preferences, setPreferences] = useState(null);
   const [formVals, setFormVals] = useState(null);
   const [prefsPath, setPrefsPath] = useState("");
@@ -19,7 +19,7 @@ const PreferencePanel = () => {
   }, []);
   if (!preferences) return null;
 
-  const onChange = (e) => {
+  const onChangeHandler = (e) => {
     const { id, value, type, checked } = e.currentTarget;
     const currentVals = { ...formVals };
     if (type === "checkbox") {
@@ -29,26 +29,11 @@ const PreferencePanel = () => {
     }
     setFormVals(currentVals);
     window.databaseAPI.preferencesSet(currentVals);
+    onChange();
   };
 
-  const InfoPanel = () => (
-    <div
-      style={{ display: "flex", flexDirection: "column", fontSize: ".8rem" }}
-    >
-      <div style={{ display: "flex", flexDirection: "row" }}>
-        <div style={{ width: "3rem" }}>Version:</div>
-        <div style={{ opacity: 0.5 }}> {packageJson.version}</div>
-      </div>
-      <div style={{ display: "flex", flexDirection: "row" }}>
-        <div style={{ width: "3rem" }}>Config:</div>
-        <div style={{ opacity: 0.5 }}> {prefsPath}</div>
-      </div>
-    </div>
-  );
-
   return (
-    <div style={{}}>
-      <InfoPanel />
+    <div style={{ padding: "0 1rem 0 1rem" }}>
       {formConfig.map((config, idx) => {
         const { key, display, hidden, tooltip } = config;
         if (!hidden)
@@ -63,37 +48,69 @@ const PreferencePanel = () => {
               }}
             >
               {(typeof formVals[key] === "boolean" && (
-                <React.Fragment>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: ".4rem"
+                  }}
+                >
                   <div>
                     <input
                       style={{
                         width: "2rem",
                         height: "2rem",
                         marginRight: "1rem",
-                        accentColor: "rgb(195 211 210)"
+                        accentColor: "#bdbdbd"
                       }}
                       id={key}
                       type={"checkbox"}
                       checked={formVals[key]}
-                      onChange={onChange}
+                      onChange={onChangeHandler}
                     />
                   </div>
-                  <div style={{ width: "100%", fontWeight: 900 }}>
-                    {display}
+                  <div
+                    style={{
+                      width: "100%",
+                      fontWeight: 900,
+                      fontSize: ".9rem"
+                    }}
+                  >
+                    {display}{" "}
+                    <div style={{ fontWeight: 200, fontSize: ".9rem" }}>
+                      {tooltip}
+                    </div>
                   </div>
-                </React.Fragment>
+                </div>
               )) || (
                 <React.Fragment>
-                  <div style={{ width: "12rem", fontWeight: 900 }}>
-                    {display}
+                  <div style={{ width: "3.8rem" }} />
+                  <div
+                    style={{
+                      fontWeight: 900,
+                      width: "20.5rem",
+                      marginBottom: ".5rem",
+                      fontSize: ".9rem"
+                    }}
+                  >
+                    {display}{" "}
+                    <div style={{ fontWeight: 200, fontSize: ".9rem" }}>
+                      {tooltip}
+                    </div>
                   </div>
-                  <div>
+                  <div style={{ margin: ".2rem", width: "70vw" }}>
                     <input
-                      style={{ width: "20rem", height: "2rem" }}
+                      style={{
+                        width: "97%",
+                        height: "2rem",
+                        borderRadius: "0.3rem",
+                        border: "1px solid #bdbdbd",
+                        fontSize: ".7rem"
+                      }}
                       id={key}
                       type={"text"}
                       value={formVals[key]}
-                      onChange={onChange}
+                      onChange={onChangeHandler}
                     />
                   </div>
                 </React.Fragment>
