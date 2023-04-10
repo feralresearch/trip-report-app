@@ -1,5 +1,5 @@
 // If WQL hangs, you can reliably un-stick it by restarting "Windows Management Instrumentation" in "Services" panel
-import { ACTIONS, ipcSend } from "../actions.js";
+import { ACTIONS, ipcSend } from "./actions.js";
 import os from "os";
 const isWin = os.platform() === "win32";
 import readline from "readline";

@@ -5,7 +5,7 @@ nodemon ./packages/main/src/modules/bulkImport.js "/Users/andrew/Library/Applica
 import prefs from "../modules/prefs.js";
 import { knexInit } from "../modules/knex/knexfile.js";
 import { processLogfiles } from "../modules/vrcLogParse.js";
-import { ACTIONS, ipcSend } from "../actions.js";
+import { ACTIONS, ipcSend } from "../modules/actions.js";
 import { exit } from "process";
 
 const prefsFile = process.argv[2];

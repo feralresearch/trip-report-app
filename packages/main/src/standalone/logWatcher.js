@@ -1,5 +1,5 @@
 "use strict";
-import { ACTIONS, ipcSend } from "../actions.js";
+import { ACTIONS, ipcSend } from "../modules/actions.js";
 import { isProcessRunning } from "../modules/util.js";
 import { initializeWatcher } from "../modules/watcher.js";
 import { processLogfiles } from "../modules/vrcLogParse.js";

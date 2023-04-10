@@ -34,3 +34,9 @@ npm exec --package=electron-builder -- electron-builder --config .electron-build
 V2
 
 http://book.mixu.net/node/
+
+
+## Release
+update package.json
+git tag vX.X.X
+git push --tags

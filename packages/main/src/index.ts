@@ -10,7 +10,7 @@ import {
 } from "electron";
 import "./security-restrictions";
 import { restoreOrCreateWindow } from "/@/mainWindow";
-import { ACTIONS } from "./actions.js";
+import { ACTIONS } from "./modules/actions.js";
 import icon from "../../../buildResources/icon_19x19.png";
 import type { ChildProcess } from "child_process";
 import { fork } from "child_process";
@@ -151,7 +151,7 @@ prefs.load()?.then((preferences) => {
         .then((module) => {
           const autoUpdater =
             module.autoUpdater ||
-            (module.default.autoUpdater as (typeof module)["autoUpdater"]);
+            (module.default.autoUpdater as typeof module["autoUpdater"]);
           return autoUpdater.checkForUpdatesAndNotify();
         })
         .catch((e) => console.error("Failed check updates:", e));
