@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { formConfig } from "./formConfig.js";
-import packageJson from "../../../../../package.json";
 
 const PreferencePanel = ({ onChange }) => {
   const [preferences, setPreferences] = useState(null);
   const [formVals, setFormVals] = useState(null);
-  const [prefsPath, setPrefsPath] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       const data = await window.databaseAPI.preferencesGet();
-      const prefsPath = await window.databaseAPI.preferencesGetPath();
-      setPrefsPath(prefsPath);
       setPreferences(data);
       setFormVals(data);
     };

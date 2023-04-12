@@ -111,7 +111,7 @@ prefs.load()?.then((preferences) => {
           logWatcherProcess.removeAllListeners();
 
           logWatcherProcess.on("message", async (m: string) => {
-            const { action, payload } = JSON.parse(m);
+            const { action } = JSON.parse(m);
             switch (action) {
               case ACTIONS.DB_LOCK_REQUEST:
                 console.log("DB: LOCK REQUESTED BY CHILD PROCESS");
