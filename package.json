@@ -10,7 +10,7 @@
     "url": "https://intrepidpixel.org/"
   },
   "engines": {
-    "node": "=16.15"
+    "node": ">18.12"
   },
   "main": "packages/main/dist/index.cjs",
   "scripts": {
