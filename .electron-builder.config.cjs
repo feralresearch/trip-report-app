@@ -27,6 +27,11 @@ module.exports = async function () {
         from: "packages/main/src/standalone",
         to: "packages/main/src/standalone",
         filter: ["**/*"]
+      },
+      {
+        from: "packages/package.json",
+        to: "packages/package.json",
+        filter: ["**/*"]
       }
     ],
     extraMetadata: {
