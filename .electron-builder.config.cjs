@@ -13,13 +13,14 @@ module.exports = async function () {
 
   return {
     directories: {
-      output: "dist",
+      output: "dist5",
       buildResources: "buildResources"
     },
     files: ["packages/**/dist/**"],
     extraMetadata: {
       version: getVersion()
     },
+    asarUnpack: ["standalone"],
 
     // Specify linux target just for disabling snap compilation
     linux: {

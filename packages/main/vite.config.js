@@ -45,12 +45,12 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {
-          src: "src/standalone",
-          dest: "standalone"
+          src: "src/standalone/",
+          dest: ""
         },
         {
-          src: "src/modules",
-          dest: "modules"
+          src: "src/modules/",
+          dest: ""
         }
       ]
     })

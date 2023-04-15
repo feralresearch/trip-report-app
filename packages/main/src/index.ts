@@ -26,6 +26,10 @@ const isWin = os.platform() === "win32";
 let logWatcherProcess: ChildProcess;
 sharp.cache(false);
 
+const asar = require("asar-node");
+asar.register();
+asar.addAsarToLookupPaths();
+
 // Disable Hardware Acceleration to save more system resources.
 app.disableHardwareAcceleration();
 
@@ -103,7 +107,12 @@ prefs.load()?.then((preferences) => {
       .then(async () => {
         // Log Watcher
         if (!logWatcherProcess) {
-          logWatcherProcess = fork("./standalone/logWatcher.js", [
+          const entryPoint = path.join(
+            app.isPackaged ? process.resourcesPath : __dirname,
+            "./app/packages/main/dist/standalone/logWatcher.js"
+          );
+
+          logWatcherProcess = fork(entryPoint, [
             prefs.prefsFile ? prefs.prefsFile : ""
           ]);
 
