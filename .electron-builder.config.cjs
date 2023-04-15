@@ -17,18 +17,6 @@ module.exports = async function () {
       buildResources: "buildResources"
     },
     files: ["packages/**/dist/**"],
-    extraFiles: [
-      {
-        from: "packages/main/src/modules",
-        to: "packages/main/src/modules",
-        filter: ["**/*"]
-      },
-      {
-        from: "packages/main/src/standalone",
-        to: "packages/main/src/standalone",
-        filter: ["**/*"]
-      }
-    ],
     extraMetadata: {
       version: getVersion()
     },

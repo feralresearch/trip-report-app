@@ -103,10 +103,9 @@ prefs.load()?.then((preferences) => {
       .then(async () => {
         // Log Watcher
         if (!logWatcherProcess) {
-          logWatcherProcess = fork(
-            "./packages/main/src/standalone/logWatcher.js",
-            [prefs.prefsFile ? prefs.prefsFile : ""]
-          );
+          logWatcherProcess = fork("./standalone/logWatcher.js", [
+            prefs.prefsFile ? prefs.prefsFile : ""
+          ]);
 
           logWatcherProcess.removeAllListeners();
 
