@@ -20,17 +20,12 @@ module.exports = async function () {
     extraFiles: [
       {
         from: "packages/main/src/modules",
-        to: "packages/main/src/modules",
+        to: "resources/app/modules",
         filter: ["**/*"]
       },
       {
         from: "packages/main/src/standalone",
-        to: "packages/main/src/standalone",
-        filter: ["**/*"]
-      },
-      {
-        from: "packages/package.json",
-        to: "packages/package.json",
+        to: "resources/app/standalone",
         filter: ["**/*"]
       }
     ],
