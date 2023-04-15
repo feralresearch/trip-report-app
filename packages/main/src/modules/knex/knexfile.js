@@ -15,10 +15,10 @@ export const knexInit = (pathToDatabase) => {
     useNullAsDefault: true,
     migrations: {
       tableName: `knex_vrclog_migrations`,
-      directory: "./packages/main/src/modules/knex/migrations"
+      directory: "./migrations"
     },
     seeds: {
-      directory: "./packages/main/src/modules/knex/seeds"
+      directory: "./seeds"
     },
     pool: { propagateCreateError: false, min: 0, max: 1 }
   });
