@@ -1,7 +1,7 @@
 {
   "name": "TripReport",
   "description": "Trip Report",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "private": true,
   "type": "module",
   "author": {
@@ -52,6 +52,7 @@
     "typescript": "4.9.4",
     "unplugin-auto-expose": "0.0.4",
     "vite": "4.0.4",
+    "vite-plugin-static-copy": "^0.13.1",
     "vitest": "0.27.1"
   },
   "dependencies": {
@@ -83,8 +84,5 @@
     "sqlite3": "^5.1.4",
     "uuid": "^9.0.0",
     "wql-process-monitor": "^3.0.0"
-  },
-  "optionalDependencies": {
-   
   }
 }

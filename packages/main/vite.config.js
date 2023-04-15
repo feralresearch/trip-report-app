@@ -1,6 +1,7 @@
 import { node } from "../../.electron-vendors.cache.json";
 import { join } from "node:path";
 import { injectAppVersion } from "../../version/inject-app-version-plugin.mjs";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 const PACKAGE_ROOT = __dirname;
 const PROJECT_ROOT = join(PACKAGE_ROOT, "../..");
@@ -39,7 +40,21 @@ export default defineConfig({
     emptyOutDir: true,
     reportCompressedSize: false
   },
-  plugins: [injectAppVersion()],
+  plugins: [
+    injectAppVersion(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: "src/standalone",
+          dest: "standalone"
+        },
+        {
+          src: "src/modules",
+          dest: "modules"
+        }
+      ]
+    })
+  ],
   optimizeDeps: {
     esbuildOptions: {
       loader: {
