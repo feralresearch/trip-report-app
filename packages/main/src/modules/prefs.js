@@ -1,8 +1,7 @@
 import fs from "fs";
 import path, { resolve } from "path";
-import electron from "electron";
+import { app } from "electron";
 import os from "os";
-const { app } = electron;
 const isWin = os.platform() === "win32";
 
 const prefsFile = app
