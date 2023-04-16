@@ -49,7 +49,8 @@ const prefs = {
       });
     });
   },
-  update: async (prefsFile, partialPrefs, vrcLogDir, vrcScreenshotDir) => {
+  update: async (params) => {
+    const { prefsFile, partialPrefs, vrcLogDir, vrcScreenshotDir } = params;
     const currentPreferences = await prefs.load(
       prefsFile,
       vrcLogDir,
@@ -58,7 +59,7 @@ const prefs = {
     Object.keys(partialPrefs).forEach(
       (key) => (currentPreferences[key] = partialPrefs[key])
     );
-    await prefs.save({ ...currentPreferences });
+    await prefs.save(prefsFile, { ...currentPreferences });
   },
   save: async (prefsFile, data) => {
     fs.writeFileSync(prefsFile, JSON.stringify(data));

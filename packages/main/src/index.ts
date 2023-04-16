@@ -279,7 +279,7 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
 
         const win = BrowserWindow.fromWebContents(event.sender);
         const child = fork("./packages/main/src/standalone/bulkImport.js", [
-          prefs.prefsFile,
+          prefsFile,
           logs,
           screenshots
         ]);
@@ -357,12 +357,12 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
 
       ipcMain.handle(ACTIONS.PREFERENCES_SET, async (_event, partialPrefs) => {
         debounce(async () => {
-          await prefs.update(
+          await prefs.update({
             prefsFile,
             partialPrefs,
             vrcLogDir,
             vrcScreenshotDir
-          );
+          });
         }, 500);
       });
     });
