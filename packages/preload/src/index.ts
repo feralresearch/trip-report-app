@@ -34,7 +34,8 @@ contextBridge.exposeInMainWorld("databaseAPI", {
     ipcRenderer.invoke(ACTIONS.ROTATE_IMAGE, [id, deg]).then(() => cb());
   },
   exportAsset: (id: string) => ipcRenderer.invoke(ACTIONS.EXPORT_ASSET, id),
-  instancesGet: () => ipcRenderer.invoke(ACTIONS.INSTANCES_GET),
+  instancesGet: (filter: string) =>
+    ipcRenderer.invoke(ACTIONS.INSTANCES_GET, filter),
   instanceGet: (id: string) => ipcRenderer.invoke(ACTIONS.INSTANCE_GET, id),
   statisticsGet: () => ipcRenderer.invoke(ACTIONS.STATISTICS_GET),
   preferencesGet: () => ipcRenderer.invoke(ACTIONS.PREFERENCES_GET),

@@ -4,6 +4,7 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import Spinner from "./components/Spinner";
 
 export const AppContext = React.createContext({ log: [] });
+const prefs = await window.databaseAPI.preferencesGet();
 
 function App() {
   const [log, setLog] = useState([`${Date.now()} - Reset`]);
@@ -25,7 +26,20 @@ function App() {
   }, [log]);
 
   return (
-    <AppContext.Provider value={{ log }}>
+    <AppContext.Provider
+      value={{
+        log,
+        prefs,
+        setPref: (pref, val) => {
+          window.databaseAPI
+            .preferencesGet()
+            .then((current) =>
+              window.databaseAPI.preferencesSet({ ...current, [pref]: val })
+            );
+        },
+        setPrefs: (vals) => window.databaseAPI.preferencesSet(vals)
+      }}
+    >
       <HashRouter>
         {showSpinner && <Spinner />}
         <Routes>

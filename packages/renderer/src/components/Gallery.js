@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import Mousetrap from "mousetrap";
 import { DateTime } from "luxon";
 import { v4 as uuidv4 } from "uuid";
+import { AppContext } from "../App";
 
 const useOutsideAlerter = (ref, onOutsideClick) => {
   useEffect(() => {
@@ -123,21 +124,15 @@ const Zoomed = ({
 };
 
 const Gallery = ({ screenshots, onExport }) => {
+  const { prefs } = useContext(AppContext);
   const [prevImage, setPrevImage] = useState(null);
   const [nextImage, setNextImage] = useState(null);
   const [currentImage, _setCurrentImage] = useState(null);
   const [cacheBust, setCacheBust] = useState(uuidv4());
 
-  const [prefsPath, setPrefsPath] = useState("");
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await window.databaseAPI.preferencesGet();
+  const assetPath = encodeURI(`asset://${prefs.dataDir}/assets`);
 
-      setPrefsPath(data.dataDir);
-    };
-    fetchData();
-  }, []);
-  const assetPath = encodeURI(`asset://${prefsPath}/assets`);
+  if (!prefs.dataDir) return null;
 
   const setCurrentImage = (value) => {
     const nextIdx =

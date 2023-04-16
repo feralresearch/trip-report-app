@@ -1,19 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { AppContext } from "../../App";
+import React, { useState, useContext } from "react";
 import { formConfig } from "./formConfig.js";
 
 const PreferencePanel = ({ onChange }) => {
-  const [preferences, setPreferences] = useState(null);
-  const [formVals, setFormVals] = useState(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await window.databaseAPI.preferencesGet();
-      setPreferences(data);
-      setFormVals(data);
-    };
-    fetchData();
-  }, []);
-  if (!preferences) return null;
+  const { prefs, setPrefs } = useContext(AppContext);
+  const [formVals, setFormVals] = useState(prefs);
 
   const onChangeHandler = (e) => {
     const { id, value, type, checked } = e.currentTarget;
@@ -24,7 +15,7 @@ const PreferencePanel = ({ onChange }) => {
       currentVals[id] = value;
     }
     setFormVals(currentVals);
-    window.databaseAPI.preferencesSet(currentVals);
+    setPrefs(currentVals);
     onChange();
   };
 

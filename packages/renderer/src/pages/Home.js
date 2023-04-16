@@ -1,23 +1,42 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { DateTime } from "luxon";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Instance from "./Instance";
 import styles from "./styles";
 import Config from "../components/Config";
+import { MdOutlineImage, MdOutlineImageNotSupported } from "react-icons/md";
+import { AppContext } from "../App";
 
 let currentDate = null;
 let previousDate = null;
 const Home = () => {
+  const { prefs, setPref } = useContext(AppContext);
   const params = useParams();
   const instanceId = params.id;
-  const [configPanelOpen, setConfigPanelOpen] = useState(false);
+
   const [instanceList, setInstanceList] = useState(null);
   const [watcherOnline, setWatcherOnline] = useState(false);
 
+  const [configPanelOpen, _setConfigPanelOpen] = useState(
+    prefs.ui_configPanelOpen
+  );
+  const setConfigPanelOpen = (val) => {
+    setPref("ui_configPanelOpen", val);
+    _setConfigPanelOpen(val);
+  };
+
+  const [tripFetchFilter, _setTripFetchFilter] = useState(
+    prefs.ui_tripFetchFilter ? prefs.ui_tripFetchFilter : "instance_list"
+  );
+  const setTripFetchFilter = (val) => {
+    setPref("ui_tripFetchFilter", val);
+    _setTripFetchFilter(val);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
-      const data = await window.databaseAPI.instancesGet();
+      const data = await window.databaseAPI.instancesGet(tripFetchFilter);
       setInstanceList((_data) => data);
     };
     window.electronAPI.onScanComplete(() => {
@@ -30,7 +49,7 @@ const Home = () => {
       setWatcherOnline(true);
     });
     fetchData();
-  }, []);
+  }, [tripFetchFilter]);
 
   const [filteredInstanceList, setFilteredInstanceList] =
     useState(instanceList);
@@ -58,12 +77,47 @@ const Home = () => {
         >
           <h1 onClick={() => navigate(`/`)}>Trip Report</h1>
           <div style={styles.section}>
-            <h2>
-              {filteredInstanceList?.length}{" "}
-              {filter && filter.length > 0
-                ? `trips matching ${filter}`
-                : "trips"}
-            </h2>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center"
+              }}
+            >
+              <h2>
+                {filteredInstanceList?.length}{" "}
+                {filter && filter.length > 0
+                  ? `trips matching ${filter}`
+                  : "trips"}
+              </h2>
+              <div style={{ flexGrow: 1 }}></div>
+              <div
+                style={{ fontSize: "2rem" }}
+                onClick={() => {
+                  switch (tripFetchFilter) {
+                    case "instance_list":
+                      setTripFetchFilter("instance_with_photos_list");
+                      break;
+                    case "instance_with_photos_list":
+                      setTripFetchFilter("instance_without_photos_list");
+                      break;
+                    case "instance_without_photos_list":
+                      setTripFetchFilter("instance_list");
+                      break;
+                  }
+                }}
+              >
+                {(tripFetchFilter === "instance_list" && (
+                  <MdOutlineImage style={{ opacity: 0.2 }} />
+                )) ||
+                  (tripFetchFilter === "instance_with_photos_list" && (
+                    <MdOutlineImage />
+                  )) ||
+                  (tripFetchFilter === "instance_without_photos_list" && (
+                    <MdOutlineImageNotSupported />
+                  ))}
+              </div>
+            </div>
             <input
               placeholder="Search..."
               style={styles.input}

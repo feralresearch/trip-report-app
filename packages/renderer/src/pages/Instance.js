@@ -7,6 +7,8 @@ import MediaList from "../components/MediaList";
 import styles from "./styles";
 import Spinner from "../components/Spinner";
 
+let timer;
+
 const Instance = () => {
   const params = useParams();
   //const instanceId = params.id;
@@ -14,10 +16,11 @@ const Instance = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
+    timer = setTimeout(() => setIsLoading(true), 250);
     const fetchData = async () => {
       const data = await window.databaseAPI.instanceGet(params.id);
       setData(data);
+      clearTimeout(timer);
       setIsLoading(false);
     };
     fetchData();

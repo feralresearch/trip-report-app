@@ -322,19 +322,22 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
         }
       });
 
-      ipcMain.handle(ACTIONS.INSTANCES_GET, async () => {
-        try {
-          const instances = knex
-            ? await knex.select("*").from("instance_list").orderBy("ts", "desc")
-            : [];
-          return instances.map((instance) => ({
-            ...instance,
-            data: JSON.parse(instance.data)
-          }));
-        } catch (e) {
-          return [];
+      ipcMain.handle(
+        ACTIONS.INSTANCES_GET,
+        async (_event, filter = "instance_list") => {
+          try {
+            const instances = knex
+              ? await knex.select("*").from(filter).orderBy("ts", "desc")
+              : [];
+            return instances.map((instance) => ({
+              ...instance,
+              data: JSON.parse(instance.data)
+            }));
+          } catch (e) {
+            return [];
+          }
         }
-      });
+      );
 
       ipcMain.handle(ACTIONS.INSTANCE_GET, async (_event, id) => {
         try {
