@@ -346,10 +346,12 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
                 .andWhereRaw("tag IS NOT NULL")
                 .orderBy("ts")
             : [];
-          return logEntries.map((entry) => ({
+
+          const entries = logEntries.map((entry) => ({
             ...entry,
             data: JSON.parse(entry.data)
           }));
+          return entries;
         } catch (e) {
           return [];
         }

@@ -11,7 +11,7 @@ let previousDate = null;
 const Home = () => {
   const params = useParams();
   const instanceId = params.id;
-  const [configPanelOpen, setConfigPanelOpen] = useState(true);
+  const [configPanelOpen, setConfigPanelOpen] = useState(false);
   const [instanceList, setInstanceList] = useState(null);
   const [watcherOnline, setWatcherOnline] = useState(false);
 
