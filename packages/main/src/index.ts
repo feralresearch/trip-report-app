@@ -29,7 +29,17 @@ sharp.cache(false);
 // Disable Hardware Acceleration to save more system resources.
 app.disableHardwareAcceleration();
 
-prefs.load()?.then((preferences) => {
+const prefsFile = path.join(app.getPath("userData"), "config.json");
+const vrcLogDir = path.join(
+  app.getPath("home"),
+  "AppData",
+  "LocalLow",
+  "VRChat",
+  "VRChat"
+);
+const vrcScreenshotDir = path.join(app.getPath("home"), "Pictures", "VRChat");
+
+prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
   let knex = knexInit(preferences.dataDir);
   knex?.migrate.latest().then(() => {
     // Prevent electron from running multiple instances.
@@ -103,17 +113,12 @@ prefs.load()?.then((preferences) => {
       .then(async () => {
         // Log Watcher
         if (!logWatcherProcess) {
-          /*
-LW: Process.resourcesPath: C:\Users\An\Code\trip-report-app\dist\win-unpacked\resources
-LW: dirname: C:\Users\An\Code\trip-report-app\dist\win-unpacked\resources\app.asar\packages\main\dist
-
-          */
           console.log(`LW: Process.resourcesPath: ${process.resourcesPath}`);
           console.log(`LW: dirname: ${__dirname}`);
 
           logWatcherProcess = fork(
             path.join(__dirname, "standalone", "logWatcher.js"),
-            [prefs.prefsFile ? prefs.prefsFile : ""]
+            [prefsFile, vrcLogDir, vrcScreenshotDir]
           );
 
           logWatcherProcess.removeAllListeners();
@@ -173,7 +178,11 @@ LW: dirname: C:\Users\An\Code\trip-report-app\dist\win-unpacked\resources\app.as
 
     // Create custom protocol for local media loading
     app.whenReady().then(async () => {
-      const preferences = await prefs.load();
+      const preferences = await prefs.load(
+        prefsFile,
+        vrcLogDir,
+        vrcScreenshotDir
+      );
       protocol.registerFileProtocol("asset", (request, cb) => {
         if (
           preferences.dataDir &&
@@ -348,7 +357,12 @@ LW: dirname: C:\Users\An\Code\trip-report-app\dist\win-unpacked\resources\app.as
 
       ipcMain.handle(ACTIONS.PREFERENCES_SET, async (_event, partialPrefs) => {
         debounce(async () => {
-          await prefs.update(partialPrefs);
+          await prefs.update(
+            prefsFile,
+            partialPrefs,
+            vrcLogDir,
+            vrcScreenshotDir
+          );
         }, 500);
       });
     });

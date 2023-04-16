@@ -6,7 +6,15 @@ import prefs from "./modules/prefs";
 
 async function createWindow() {
   const prefsFile = path.join(app.getPath("userData"), "config.json");
-  const preferences = await prefs.load(prefsFile);
+  const vrcLogDir = path.join(
+    app.getPath("home"),
+    "AppData",
+    "LocalLow",
+    "VRChat",
+    "VRChat"
+  );
+  const vrcScreenshotDir = path.join(app.getPath("home"), "Pictures", "VRChat");
+  const preferences = await prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir);
   const browserWindow = new BrowserWindow({
     width: 1024,
     height: 1024,
