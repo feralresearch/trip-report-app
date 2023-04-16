@@ -93,5 +93,11 @@ export const formConfig = [
     display: "Debug Mode",
     tooltip: "Log additional debugging info",
     hidden: true
+  },
+  {
+    key: "googleApiKey",
+    display: "Google API Key",
+    tooltip: "Required to resolve information about media links",
+    hidden: false
   }
 ];

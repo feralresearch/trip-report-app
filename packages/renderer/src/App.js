@@ -4,16 +4,19 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import Spinner from "./components/Spinner";
 
 export const AppContext = React.createContext({ log: [] });
-const prefs = await window.databaseAPI.preferencesGet();
+let prefs = await window.databaseAPI.preferencesGet();
 
 function App() {
   const [log, setLog] = useState([`${Date.now()} - Reset`]);
   const [showSpinner, setShowSpinner] = useState(false);
+  const [currentPrefs, setCurrentPrefs] = useState(prefs);
+
   useEffect(() => {
     window.electronAPI.onIsWorkingUpdate((_event, value) => {
       setShowSpinner(value > 0 ? true : false);
     });
   }, []);
+
   useEffect(() => {
     window.electronAPI.onLogEvent((_event, value) => {
       setLog((log) => {
@@ -25,19 +28,21 @@ function App() {
     });
   }, [log]);
 
+  console.log(currentPrefs);
+
   return (
     <AppContext.Provider
       value={{
         log,
-        prefs,
+        prefs: currentPrefs,
         setPref: (pref, val) => {
-          window.databaseAPI
-            .preferencesGet()
-            .then((current) =>
-              window.databaseAPI.preferencesSet({ ...current, [pref]: val })
-            );
+          window.databaseAPI.preferencesSet({ ...currentPrefs, [pref]: val });
+          setCurrentPrefs({ ...currentPrefs, [pref]: val });
         },
-        setPrefs: (vals) => window.databaseAPI.preferencesSet(vals)
+        setPrefs: (vals) => {
+          window.databaseAPI.preferencesSet(vals);
+          setCurrentPrefs(vals);
+        }
       }}
     >
       <HashRouter>
