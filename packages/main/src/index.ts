@@ -10,16 +10,19 @@ import {
 } from "electron";
 import "./security-restrictions";
 import { restoreOrCreateWindow } from "/@/mainWindow";
-import { ACTIONS } from "./modules/actions.js";
+import { ACTIONS } from "./standalone/modules/actions.js";
 import icon from "../../../buildResources/icon_19x19.png";
 import type { ChildProcess } from "child_process";
 import { fork } from "child_process";
-import { fileNameToPath } from "./modules/vrcScreenshots.js";
+import { fileNameToPath } from "./standalone/modules/vrcScreenshots.js";
 import * as fs from "fs";
-import prefs from "./modules/prefs.js";
+import prefs from "./standalone/modules/prefs.js";
 import path from "path";
-import { knexInit } from "./modules/knex/knexfile.js";
+import { knexInit } from "./standalone/modules/knex/knexfile.js";
+const asar = require("asar-node");
 
+asar.register();
+asar.addAsarToLookupPaths();
 import sharp from "sharp";
 import os from "os";
 const isWin = os.platform() === "win32";
@@ -112,14 +115,27 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
       .whenReady()
       .then(async () => {
         // Log Watcher
-        if (!logWatcherProcess) {
-          console.log(`LW: Process.resourcesPath: ${process.resourcesPath}`);
-          console.log(`LW: dirname: ${__dirname}`);
 
-          logWatcherProcess = fork(
-            path.join(__dirname, "standalone", "logWatcher.js"),
-            [prefsFile, vrcLogDir, vrcScreenshotDir]
-          );
+        const isInAsar = fs.existsSync(
+          path.join(process.resourcesPath, "app.asar.unpacked")
+        );
+        const packagedWithAsar = path.join(
+          process.resourcesPath,
+          "app.asar.unpacked",
+          "packages",
+          "main",
+          "dist",
+          "standalone",
+          "logWatcher.js"
+        );
+        const notPackaged = path.join(__dirname, "standalone", "logWatcher.js");
+
+        if (!logWatcherProcess) {
+          logWatcherProcess = fork(isInAsar ? packagedWithAsar : notPackaged, [
+            prefsFile,
+            vrcLogDir,
+            vrcScreenshotDir
+          ]);
 
           logWatcherProcess.removeAllListeners();
 
@@ -142,7 +158,7 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
                 break;
 
               default:
-                console.log(`WARNING: Unhandled action ${action}`);
+              //console.log(`WARNING: Unhandled action ${action}`);
             }
           });
 

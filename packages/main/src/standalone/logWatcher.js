@@ -1,11 +1,11 @@
 "use strict";
-import { ACTIONS, ipcSend } from "../modules/actions.js";
-import { isProcessRunning } from "../modules/util.js";
-import { initializeWatcher } from "../modules/watcher.js";
-import { processLogfiles } from "../modules/vrcLogParse.js";
-import { knexInit } from "../modules/knex/knexfile.js";
+import { ACTIONS, ipcSend } from "./modules/actions.js";
+import { isProcessRunning } from "./modules/util.js";
+import { initializeWatcher } from "./modules/watcher.js";
+import { processLogfiles } from "./modules/vrcLogParse.js";
+import { knexInit } from "./modules/knex/knexfile.js";
 import os from "os";
-import prefs from "../modules/prefs.js";
+import prefs from "./modules/prefs.js";
 
 const onLog = (m) => {
   console.log(m);

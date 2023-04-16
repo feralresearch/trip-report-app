@@ -1,7 +1,7 @@
 {
   "name": "TripReport",
   "description": "Trip Report",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "private": true,
   "type": "module",
   "author": {
@@ -19,6 +19,7 @@
     "build:preload": "cd ./packages/preload && vite build",
     "build:renderer": "cd ./packages/renderer && vite build",
     "compile": "cross-env MODE=production npm run build && electron-builder build --config .electron-builder.config.cjs --dir --config.asar=false",
+    "compile-asar": "cross-env MODE=production npm run build && electron-builder build --config .electron-builder.config.cjs --dir --config.asar=true --config.asarUnpack packages/main/dist/standalone**/**",
     "test": "npm run test:main && npm run test:preload && npm run test:renderer && npm run test:e2e",
     "test:e2e": "npm run build && vitest run",
     "test:main": "vitest run -r packages/main --passWithNoTests",
@@ -42,7 +43,7 @@
     "@types/tmp": "^0.2.3",
     "@typescript-eslint/eslint-plugin": "5.48.1",
     "cross-env": "7.0.3",
-    "electron": "20.2",
+    "electron": "24.1.2",
     "electron-builder": "23.6.0",
     "eslint": "8.31.0",
     "eslint-plugin-vue": "9.9.0",

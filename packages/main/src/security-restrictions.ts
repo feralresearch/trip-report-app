@@ -3,6 +3,7 @@ import { URL } from "url";
 
 type Permissions =
   | "clipboard-read"
+  | "clipboard-sanitized-write"
   | "media"
   | "display-capture"
   | "mediaKeySystem"
@@ -13,6 +14,7 @@ type Permissions =
   | "pointerLock"
   | "fullscreen"
   | "openExternal"
+  | "window-management"
   | "unknown";
 
 /**

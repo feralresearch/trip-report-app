@@ -47,10 +47,6 @@ export default defineConfig({
         {
           src: "src/standalone/",
           dest: ""
-        },
-        {
-          src: "src/modules/",
-          dest: ""
         }
       ]
     })

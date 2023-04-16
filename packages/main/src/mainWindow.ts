@@ -2,7 +2,7 @@ import { app, BrowserWindow } from "electron";
 import { join } from "path";
 import { URL } from "url";
 import path from "path";
-import prefs from "./modules/prefs";
+import prefs from "./standalone/modules/prefs";
 
 async function createWindow() {
   const prefsFile = path.join(app.getPath("userData"), "config.json");

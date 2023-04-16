@@ -7,18 +7,8 @@ asar.register();
 asar.addAsarToLookupPaths();
 
 import { fileURLToPath } from "url";
-
 const __filename = fileURLToPath(import.meta.url);
-
 const __dirname = path.dirname(__filename);
-
-/*
-Process.resourcesPath: C:\Users\An\Code\trip-report-app\dist5\win-unpacked\resources
-dirname: C:\Users\An\Code\trip-report-app\dist5\win-unpacked\resources\app\packages\main\dist
-
-Process.resourcesPath: C:\Users\An\Code\trip-report-app\dist5\win-unpacked\resources
-dirname: C:\Users\An\Code\trip-report-app\dist5\win-unpacked\resources\app.asar\packages\main\dist
-*/
 
 export const knexInit = (pathToDatabase) => {
   if (!pathToDatabase) {
@@ -28,12 +18,15 @@ export const knexInit = (pathToDatabase) => {
   makeDir(pathToDatabase);
   const filename = path.join(pathToDatabase, "database.db");
 
-  console.log(`Process.resourcesPath: ${process.resourcesPath}`);
-  console.log(`dirname: ${__dirname}`);
+  const migrations = path.join(
+    __dirname,
+    "standalone",
+    "modules",
+    "knex",
+    "migrations"
+  );
 
-  const migrations = path.join(__dirname, "modules", "knex", "migrations");
-
-  const seeds = path.join(__dirname, "modules", "knex", "seeds");
+  const seeds = path.join(__dirname, "standalone", "modules", "knex", "seeds");
 
   return Knex({
     client: "sqlite3",

@@ -20,7 +20,7 @@
     "src/**/*.ts",
     "../../types/**/*.d.ts",
     //"src/modules/knex/knexfile.js",
-    "src/modules/prefs.js"
+    "src/standalone/modules/prefs.js"
   ],
   "exclude": ["**/*.spec.ts", "**/*.test.ts"]
 }

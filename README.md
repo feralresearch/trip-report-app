@@ -21,8 +21,9 @@ C:\Users\An\Pictures\VRChat
 
 ## Known Issues
 
-Need to keep node version to 16.15 because of a problem with ffmapi and the watcher code
-https://github.com/node-ffi-napi/node-ffi-napi
+- ASAR is disabled for now. With ASAR on, the WQL monitor throws errors. Possibly related to:
+- Need to keep node version to 16.15 because of a problem with ffmapi and the watcher code
+  https://github.com/node-ffi-napi/node-ffi-napi
 
 ## Troubleshooting Actions
 
@@ -44,3 +45,4 @@ git push --tags
 ## Config
 
 C:\Users\An\AppData\Roaming\TripReport\config.json
+npx asar extract app.asar APPASAR
