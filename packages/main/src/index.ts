@@ -26,10 +26,6 @@ const isWin = os.platform() === "win32";
 let logWatcherProcess: ChildProcess;
 sharp.cache(false);
 
-const asar = require("asar-node");
-asar.register();
-asar.addAsarToLookupPaths();
-
 // Disable Hardware Acceleration to save more system resources.
 app.disableHardwareAcceleration();
 
@@ -107,14 +103,18 @@ prefs.load()?.then((preferences) => {
       .then(async () => {
         // Log Watcher
         if (!logWatcherProcess) {
-          const entryPoint = path.join(
-            app.isPackaged ? process.resourcesPath : __dirname,
-            "./app/packages/main/dist/standalone/logWatcher.js"
-          );
+          /*
+LW: Process.resourcesPath: C:\Users\An\Code\trip-report-app\dist\win-unpacked\resources
+LW: dirname: C:\Users\An\Code\trip-report-app\dist\win-unpacked\resources\app.asar\packages\main\dist
 
-          logWatcherProcess = fork(entryPoint, [
-            prefs.prefsFile ? prefs.prefsFile : ""
-          ]);
+          */
+          console.log(`LW: Process.resourcesPath: ${process.resourcesPath}`);
+          console.log(`LW: dirname: ${__dirname}`);
+
+          logWatcherProcess = fork(
+            path.join(__dirname, "standalone", "logWatcher.js"),
+            [prefs.prefsFile ? prefs.prefsFile : ""]
+          );
 
           logWatcherProcess.removeAllListeners();
 
