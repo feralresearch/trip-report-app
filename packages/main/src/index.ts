@@ -251,7 +251,7 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
           if (typeof selectFolder === "object" && selectFolder.filePath) {
             const dst = selectFolder.filePath;
             const child = fork("./packages/main/src/standalone/export.js", [
-              prefs.prefsFile,
+              prefsFile,
               id,
               dst,
               preferences.dataDir
