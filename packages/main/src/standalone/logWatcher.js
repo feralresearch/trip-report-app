@@ -61,23 +61,21 @@ process.on("message", (m) => {
   }
 });
 
-// Process Log Files
-const _processLogFiles = () => {
-  ipcSend(ACTIONS.DB_LOCK_REQUEST);
-};
-
 // If VRChat isn't running, process any existing logfiles
 const isRunning = await isProcessRunning({
   windows: preferences.vrcProcessName
 });
-if (!isWin || (isWin && !isRunning)) _processLogFiles();
+
 if (preferences.watcherEnabled) {
-  onLog("WATCHER: Enabled");
-  initializeWatcher({
-    onLog,
-    processName: preferences.vrcProcessName,
-    onProcess: _processLogFiles
-  });
+  if (isWin && !isRunning) {
+    ipcSend(ACTIONS.DB_LOCK_REQUEST);
+    onLog("WATCHER: Enabled");
+    initializeWatcher({
+      onLog,
+      processName: preferences.vrcProcessName,
+      onProcess: _processLogFiles
+    });
+  }
 } else {
   onLog("WATCHER: Disabled");
 }
