@@ -28,8 +28,6 @@ function App() {
     });
   }, [log]);
 
-  console.log(currentPrefs);
-
   return (
     <AppContext.Provider
       value={{

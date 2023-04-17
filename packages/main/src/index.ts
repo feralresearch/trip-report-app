@@ -72,6 +72,7 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
       app.on("before-quit", () => {
         isAppQuitting = true;
       });
+
       window.on("close", (e) => {
         if (!isAppQuitting) {
           e.preventDefault();
