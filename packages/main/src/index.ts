@@ -20,7 +20,6 @@ import prefs from "./standalone/modules/prefs.js";
 import path from "path";
 import { knexInit } from "./standalone/modules/knex/knexfile.js";
 const asar = require("asar-node");
-
 asar.register();
 asar.addAsarToLookupPaths();
 import sharp from "sharp";
@@ -42,10 +41,44 @@ const vrcLogDir = path.join(
 );
 const vrcScreenshotDir = path.join(app.getPath("home"), "Pictures", "VRChat");
 
+const isInAsar = fs.existsSync(
+  path.join(process.resourcesPath, "app.asar.unpacked")
+);
+
+const rootDirectory = isInAsar
+  ? path.join(
+      process.resourcesPath,
+      "app.asar.unpacked",
+      "packages",
+      "main",
+      "dist"
+    )
+  : __dirname;
+
+const pathToMigrations = path.join(
+  rootDirectory,
+  "standalone",
+  "modules",
+  "knex",
+  "migrations"
+);
+
+const pathToSeeds = path.join(
+  rootDirectory,
+  "standalone",
+  "modules",
+  "knex",
+  "seeds"
+);
+
 prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
-  let knex = knexInit(preferences.dataDir);
+  let knex = knexInit({
+    pathToDatabase: preferences.dataDir,
+    pathToMigrations,
+    pathToSeeds
+  });
+  // Prevent electron from running multiple instances.
   knex?.migrate.latest().then(() => {
-    // Prevent electron from running multiple instances.
     const isSingleInstance = app.requestSingleInstanceLock();
     if (!isSingleInstance) {
       app.quit();
@@ -115,11 +148,6 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
     app
       .whenReady()
       .then(async () => {
-        // Log Watcher
-
-        const isInAsar = fs.existsSync(
-          path.join(process.resourcesPath, "app.asar.unpacked")
-        );
         const packagedWithAsar = path.join(
           process.resourcesPath,
           "app.asar.unpacked",
@@ -155,7 +183,11 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
 
               case ACTIONS.DB_LOCK_RELEASE:
                 console.log("DB: LOCK RELEASED BY CHILD PROCESS");
-                knex = knexInit(preferences.dataDir);
+                knex = knexInit({
+                  pathToDatabase: preferences.dataDir,
+                  pathToMigrations,
+                  pathToSeeds
+                });
                 break;
 
               default:

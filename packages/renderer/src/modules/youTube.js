@@ -1,5 +1,3 @@
-import https from "https";
-
 /*
 const info = await getInfo(id);
 console.log(info.title);

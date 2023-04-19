@@ -37,7 +37,7 @@ process.on("message", (m) => {
   } catch {
     message = m;
   }
-  const knex = knexInit(preferences.dataDir);
+  const knex = knexInit({ pathToDatabase: preferences.dataDir });
   if (message.action == ACTIONS.INVOKE_MANUAL_SCAN) {
     if (isBusy) {
       onLog("WATCHER: I'm busy, go away");
@@ -65,17 +65,17 @@ process.on("message", (m) => {
 const isRunning = await isProcessRunning({
   windows: preferences.vrcProcessName
 });
-
+const _processLogFiles = () => {
+  ipcSend(ACTIONS.DB_LOCK_REQUEST);
+};
+if (!isRunning && isWin) _processLogFiles();
 if (preferences.watcherEnabled) {
-  if (isWin && !isRunning) {
-    ipcSend(ACTIONS.DB_LOCK_REQUEST);
-    onLog("WATCHER: Enabled");
-    initializeWatcher({
-      onLog,
-      processName: preferences.vrcProcessName,
-      onProcess: _processLogFiles
-    });
-  }
+  onLog("WATCHER: Enabled");
+  initializeWatcher({
+    onLog,
+    processName: preferences.vrcProcessName,
+    onProcess: _processLogFiles
+  });
 } else {
   onLog("WATCHER: Disabled");
 }
