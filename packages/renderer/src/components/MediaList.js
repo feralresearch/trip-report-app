@@ -12,7 +12,7 @@ const MediaTile = ({ data }) => (
         }
       />
     </div>
-    <div>{data.title}</div>
+    <div style={{ marginLeft: "1rem" }}>{data.title}</div>
   </div>
 );
 
