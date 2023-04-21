@@ -1,4 +1,7 @@
 "use strict";
+import asar from "asar-node";
+asar.register();
+asar.addAsarToLookupPaths();
 import { ACTIONS, ipcSend } from "./modules/actions.js";
 import { isProcessRunning } from "./modules/util.js";
 import { initializeWatcher } from "./modules/watcher.js";
