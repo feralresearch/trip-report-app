@@ -151,19 +151,24 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
     app
       .whenReady()
       .then(async () => {
-        const packagedWithAsar = path.join(
-          process.resourcesPath,
-          "app.asar.unpacked",
-          "packages",
-          "main",
-          "dist",
+        const pathToWatcherScript = path.join(
+          `${
+            isInAsar
+              ? path.join(
+                  process.resourcesPath,
+                  "app.asar.unpacked",
+                  "packages",
+                  "main",
+                  "dist"
+                )
+              : __dirname
+          }`,
           "standalone",
           "logWatcher.js"
         );
-        const notPackaged = path.join(__dirname, "standalone", "logWatcher.js");
 
         if (!logWatcherProcess) {
-          logWatcherProcess = fork(isInAsar ? packagedWithAsar : notPackaged, [
+          logWatcherProcess = fork(pathToWatcherScript, [
             prefsFile,
             vrcLogDir,
             vrcScreenshotDir
@@ -308,7 +313,24 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
           });
           if (typeof selectFolder === "object" && selectFolder.filePath) {
             const dst = selectFolder.filePath;
-            const child = fork("./packages/main/src/standalone/export.js", [
+
+            const pathToScript = path.join(
+              `${
+                isInAsar
+                  ? path.join(
+                      process.resourcesPath,
+                      "app.asar.unpacked",
+                      "packages",
+                      "main",
+                      "dist"
+                    )
+                  : __dirname
+              }`,
+              "standalone",
+              "export.js"
+            );
+
+            const child = fork(pathToScript, [
               prefsFile,
               id,
               dst,
@@ -317,8 +339,7 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
             child.on("message", async (progress: string) => {
               if (win) win.webContents.send(ACTIONS.PROGRESS, progress);
             });
-            child.on("close", function (code) {
-              console.log("Export exited with code " + code);
+            child.on("close", function (_code) {
               if (win) win.webContents.send(ACTIONS.PROGRESS, 0);
             });
           }

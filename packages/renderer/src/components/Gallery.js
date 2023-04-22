@@ -3,6 +3,11 @@ import Mousetrap from "mousetrap";
 import { DateTime } from "luxon";
 import { v4 as uuidv4 } from "uuid";
 import { AppContext } from "../App";
+import {
+  MdDownloadForOffline,
+  MdRotateLeft,
+  MdRotateRight
+} from "react-icons/md";
 
 const useOutsideAlerter = (ref, onOutsideClick) => {
   useEffect(() => {
@@ -47,6 +52,13 @@ const Zoomed = ({
 }) => {
   const wrapperRef = useRef(null);
   const imgRef = useRef(null);
+
+  useEffect(() => {
+    [...document.getElementsByTagName("svg")].forEach((el) => {
+      el.style.pointerEvents = "none";
+    });
+  }, [currentImage]);
+
   useOutsideAlerter(wrapperRef, (e) => {
     if (e.target.className !== "button") onOutsideClick();
   });
@@ -92,17 +104,23 @@ const Zoomed = ({
         </div>
         <div style={{ flexGrow: 1 }} />
         <div className="button" onClick={onDownload}>
-          [download]
+          <MdDownloadForOffline
+            style={{
+              fontSize: "2rem",
+              marginRight: ".25rem"
+            }}
+          />
         </div>
         <div className="button" onClick={onRotateLeft}>
-          [rotate L]
+          <MdRotateLeft style={{ fontSize: "2rem" }} />
         </div>
         <div className="button" onClick={onRotateRight}>
-          [rotate R]
+          <MdRotateRight style={{ fontSize: "2rem" }} />
         </div>
       </div>
       <div style={styles.zoomModalOverlay}>
         <div ref={wrapperRef} style={styles.zoomImgWrapper}>
+          zz
           <img
             key={cacheBust}
             ref={imgRef}
@@ -162,12 +180,32 @@ const Gallery = ({ screenshots, onExport }) => {
         onPrev={() => setCurrentImage(prevImage)}
         onOutsideClick={() => setCurrentImage(null)}
       />
-      <div>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          background: "#dddddd",
+          borderRadius: "0.3rem",
+          padding: "0 .25rem"
+        }}
+      >
         <div>
-          <h3>{screenshots.length} screenshots</h3>
+          <h3>
+            {screenshots.length} screenshot{screenshots.length != 1 && "s"}
+          </h3>
         </div>
-        <div style={{ marginRight: "3rem" }} onClick={onExport}>
-          [export]
+        <div style={{ flexGrow: 1 }} />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center"
+          }}
+        >
+          <div onClick={onExport}>
+            <MdDownloadForOffline style={{ fontSize: "1.5rem" }} />
+          </div>
         </div>
       </div>
       <div style={styles.gallery}>

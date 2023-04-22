@@ -1,22 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { SpinnerCircular } from "spinners-react";
-export default function Spinner({ showPercentage = true }) {
-  const [percentComplete, setPercentComplete] = useState("0%");
+
+export default function Spinner({ showPercentage = true, percentComplete }) {
+  const [label, setLabel] = useState(percentComplete);
+  let timer;
   useEffect(() => {
-    let timer;
-    window.electronAPI.onIsWorkingUpdate((_event, value) => {
-      const percentage = Math.floor((1 - value) * 100 * 0.75);
-      setPercentComplete(`${percentage}%`);
-      clearInterval(timer);
-      timer = setInterval(() => {
-        setPercentComplete((percentComplete) => {
-          let newPercentage = parseInt(percentComplete, 10) + 1;
-          newPercentage = newPercentage > 100 ? 100 : newPercentage;
-          return `${newPercentage}%`;
-        });
-      }, 1000);
-    });
-  }, []);
+    setLabel(percentComplete);
+    clearInterval(timer);
+    timer = setInterval(() => {
+      setLabel((label) => {
+        let newPercentage = parseInt(label, 10) + 1;
+        newPercentage = newPercentage > 100 ? 100 : newPercentage;
+        return `${newPercentage}%`;
+      });
+    }, 1000);
+  }, [percentComplete]);
 
   return (
     <div
@@ -42,9 +40,7 @@ export default function Spinner({ showPercentage = true }) {
           secondaryColor="rgba(0, 0, 0, 0)"
         />
         {showPercentage && (
-          <div style={{ marginTop: "-3rem", color: "white" }}>
-            {percentComplete}
-          </div>
+          <div style={{ marginTop: "-3rem", color: "white" }}>{label}</div>
         )}
       </div>
     </div>

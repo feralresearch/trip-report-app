@@ -13,7 +13,7 @@ const addListener = (
 
 contextBridge.exposeInMainWorld("electronAPI", {
   setTitle: (title: string) => ipcRenderer.send(ACTIONS.SET_TITLE, title),
-  onIsWorkingUpdate: (
+  onProgressUpdate: (
     cb: (event: Electron.IpcRendererEvent, ...args: []) => void
   ) => addListener(ACTIONS.PROGRESS, cb),
   onScanComplete: (

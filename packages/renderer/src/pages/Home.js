@@ -87,8 +87,10 @@ const Home = () => {
               <h2>
                 {filteredInstanceList?.length}{" "}
                 {filter && filter.length > 0
-                  ? `trips matching ${filter}`
-                  : "trips"}
+                  ? `trip${
+                      filteredInstanceList?.length != 1 ? "s" : ""
+                    } matching ${filter}`
+                  : `trip${filteredInstanceList?.length != 1 ? "s" : ""}`}
               </h2>
               <div style={{ flexGrow: 1 }}></div>
               <div
@@ -111,10 +113,10 @@ const Home = () => {
                   <MdOutlineImage style={{ opacity: 0.2 }} />
                 )) ||
                   (tripFetchFilter === "instance_with_photos_list" && (
-                    <MdOutlineImage />
+                    <MdOutlineImage style={{ opacity: 1.0 }} />
                   )) ||
                   (tripFetchFilter === "instance_without_photos_list" && (
-                    <MdOutlineImageNotSupported />
+                    <MdOutlineImageNotSupported style={{ opacity: 1.0 }} />
                   ))}
               </div>
             </div>
