@@ -17,29 +17,29 @@ const schema = {
       filename: { type: "string", nullable: false },
       wrld_id: { type: "string", nullable: false },
       usrs_in_image: { type: "string", nullable: false },
-      tags: { type: "string", nullable: false },
-      favorite: { type: "boolean", nullable: false },
+      tags: { type: "string", nullable: true },
+      favorite: { type: "boolean", nullable: true },
       usrs_in_world: { type: "string", nullable: false },
-      notes: { type: "string", nullable: false }
+      notes: { type: "string", nullable: true }
     },
     world: {
       ts: { type: "dateTime", nullable: false },
       name: { type: "string", nullable: false },
       wrld_id: { type: "string", nullable: false },
-      notes: { type: "string", nullable: false }
+      notes: { type: "string", nullable: true }
     },
     user: {
       ts: { type: "dateTime", nullable: false },
       name: { type: "string", nullable: false },
       usr_id: { type: "string", nullable: false },
-      notes: { type: "string", nullable: false }
+      notes: { type: "string", nullable: true }
     },
     media: {
       ts: { type: "dateTime", nullable: false },
       media_id: { type: "string", nullable: false },
       source: { type: "string", nullable: false },
-      data: { type: "json", nullable: true },
-      notes: { type: "string", nullable: false },
+      data: { type: "json", nullable: false },
+      notes: { type: "string", nullable: true },
       indexes: [["media_id"]]
     }
   }

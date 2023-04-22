@@ -10,7 +10,13 @@ import {
 } from "electron";
 import "./security-restrictions";
 import { restoreOrCreateWindow } from "/@/mainWindow";
-import { ACTIONS } from "./standalone/modules/actions.js";
+import {
+  ACTIONS,
+  update,
+  upsert,
+  read,
+  destroy
+} from "./standalone/modules/actions.js";
 import icon from "../../../buildResources/icon_19x19.png";
 import type { ChildProcess } from "child_process";
 import { fork } from "child_process";
@@ -248,6 +254,12 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
     });
 
     app.whenReady().then(async () => {
+      // APP
+      ipcMain.on(ACTIONS.SET_TITLE, (event, title) => {
+        const win = BrowserWindow.fromWebContents(event.sender);
+        if (win) win.setTitle(title);
+      });
+
       ipcMain.handle(ACTIONS.ROTATE_IMAGE, async (_event, args) => {
         const [id, deg] = args;
         if (id.includes(".png")) {
@@ -278,7 +290,7 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
         const win = BrowserWindow.fromId(event.sender.id);
         if (id.includes(".png")) {
           const fileName = id;
-          const pathToFile = fileNameToPath(fileName);
+          const pathToFile = fileNameToPath(fileName, preferences.dataDir);
           const selectFolder = await dialog.showSaveDialog({
             defaultPath: `~/Desktop/${fileName}`,
             properties: ["showOverwriteConfirmation"]
@@ -313,9 +325,10 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
         }
       });
 
-      ipcMain.on("set-title", (event, title) => {
-        const win = BrowserWindow.fromWebContents(event.sender);
-        if (win) win.setTitle(title);
+      ipcMain.handle(ACTIONS.REQUEST_MANUAL_SCAN, () => {
+        logWatcherProcess.send(
+          JSON.stringify({ action: ACTIONS.INVOKE_MANUAL_SCAN })
+        );
       });
 
       ipcMain.handle(ACTIONS.BULK_IMPORT, (event, options = "{}") => {
@@ -339,10 +352,6 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
         return { message: "launched" };
       });
 
-      ipcMain.handle(ACTIONS.PREFERENCES_PATH, async () => {
-        return path.join(app.getPath("userData"), "config.json");
-      });
-
       ipcMain.handle(ACTIONS.STATISTICS_GET, async () => {
         try {
           const stats = knex ? await knex.select("*").from("statistics") : null;
@@ -352,6 +361,7 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
         }
       });
 
+      // INSTANCES
       ipcMain.handle(
         ACTIONS.INSTANCES_GET,
         async (_event, filter = "instance_list") => {
@@ -390,21 +400,20 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
         }
       });
 
-      ipcMain.handle(ACTIONS.PREFERENCES_GET, async () => {
-        return preferences;
-      });
-
-      ipcMain.handle(ACTIONS.REQUEST_MANUAL_SCAN, () => {
-        logWatcherProcess.send(
-          JSON.stringify({ action: ACTIONS.INVOKE_MANUAL_SCAN })
-        );
-      });
-
+      // PREFERENCES
       let debounceTimer: NodeJS.Timeout;
       const debounce = (callback: () => void, time: number) => {
         global.clearTimeout(debounceTimer);
         debounceTimer = global.setTimeout(callback, time);
       };
+
+      ipcMain.handle(ACTIONS.PREFERENCES_PATH, async () => {
+        return path.join(app.getPath("userData"), "config.json");
+      });
+
+      ipcMain.handle(ACTIONS.PREFERENCES_GET, async () => {
+        return preferences;
+      });
 
       ipcMain.handle(ACTIONS.PREFERENCES_SET, async (_event, partialPrefs) => {
         debounce(async () => {
@@ -415,6 +424,118 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
             vrcScreenshotDir
           });
         }, 500);
+      });
+
+      // MEDIA
+      ipcMain.handle(ACTIONS.MEDIA_UPSERT, async (_event, data) => {
+        return upsert({
+          knex,
+          table: "media",
+          idField: "media_id",
+          id: data.media_id,
+          data
+        });
+      });
+
+      ipcMain.handle(ACTIONS.MEDIA_GET, async (_event, media_id) => {
+        return read({
+          knex,
+          table: "media",
+          idField: "media_id",
+          id: media_id
+        });
+      });
+
+      ipcMain.handle(ACTIONS.MEDIA_DELETE, async (_event, media_id) => {
+        return destroy({
+          knex,
+          table: "media",
+          idField: "media_id",
+          id: media_id
+        });
+      });
+
+      // SCREENSHOTS
+      ipcMain.handle(ACTIONS.SCREENSHOT_SET, (_event, data) => {
+        return upsert({
+          knex,
+          table: "screenshot",
+          idField: "filename",
+          id: data.filename,
+          data
+        });
+      });
+
+      ipcMain.handle(ACTIONS.SCREENSHOT_GET, (_event, fileName) => {
+        return read({
+          knex,
+          table: "screenshot",
+          idField: "filename",
+          id: fileName
+        });
+      });
+
+      ipcMain.handle(
+        ACTIONS.SCREENSHOT_FAVORITE,
+        (_event, fileName, isFavorite) => {
+          return upsert({
+            knex,
+            table: "screenshot",
+            idField: "filename",
+            id: fileName,
+            data: { favorite: isFavorite ? 1 : 0 }
+          });
+        }
+      );
+
+      ipcMain.handle(ACTIONS.SCREENSHOT_ANNOTATE, (_event, fileName, notes) => {
+        return upsert({
+          knex,
+          table: "screenshot",
+          idField: "filename",
+          id: fileName,
+          data: { notes }
+        });
+      });
+
+      // USER
+      ipcMain.handle(ACTIONS.USER_SET, (_event, data) => {
+        return upsert({
+          knex,
+          table: "user",
+          idField: "usr_id",
+          id: data.usr_id,
+          data
+        });
+      });
+
+      ipcMain.handle(ACTIONS.USER_GET, (_event, usr_id) => {
+        return read({
+          knex,
+          table: "user",
+          idField: "usr_id",
+          id: usr_id
+        });
+      });
+
+      // WORLD
+      ipcMain.handle(ACTIONS.WORLD_SET, (_event, data) => {
+        return upsert({
+          knex,
+          table: "world",
+          idField: "wrld_id",
+          id: data.wrld_id,
+          data
+        });
+      });
+
+      ipcMain.handle(ACTIONS.WORLD_GET, (_event, wrld_id) => {
+        return read({
+          knex,
+          table: "world",
+          idField: "wrld_id",
+          id: wrld_id
+        });
       });
     });
   });

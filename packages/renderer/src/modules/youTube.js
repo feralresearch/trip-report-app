@@ -3,12 +3,11 @@ const info = await getInfo(id);
 console.log(info.title);
 */
 
-const cache = {};
 const youTube = {
-  resolveYoutubeInfo: async ({ key, url }) => {
+  resolveYoutubeInfo: async ({ cache, key, url, cacheUpdate }) => {
     const id = youTube.extractYoutubeId(url);
     if (!id) return { title: url };
-    const info = await youTube.getYoutubeInfo({ key, id });
+    const info = await youTube.getYoutubeInfo({ cache, key, id, cacheUpdate });
     return info ? info : { title: url };
   },
   extractYoutubeId: (url) => {
@@ -19,23 +18,29 @@ const youTube = {
     const match = url.match(regExp);
     return match && match[7].length === 11 ? match[7] : false;
   },
-  getYoutubeInfo: async ({ key, id }) => {
-    if (cache[id]) {
-      console.log("Found in cache...");
-      return cache[id];
-    }
-    const url = `https://www.googleapis.com/youtube/v3/videos?key=${key}&part=snippet&id=${id}`;
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/json"
-      }
-    });
-    const json = await response.json();
-    if (json.items?.length > 0) {
-      cache[id] = json.items[0].snippet;
-      return json.items[0].snippet;
+  getYoutubeInfo: async ({ key, id, cache, cacheUpdate }) => {
+    const cached = cache.find((item) => item.media_id === id);
+    if (cached) {
+      return JSON.parse(cached.data).snippet;
     } else {
-      return null;
+      const url = `https://www.googleapis.com/youtube/v3/videos?key=${key}&part=snippet&id=${id}`;
+      const response = await fetch(url, {
+        headers: {
+          Accept: "application/json"
+        }
+      });
+      const json = await response.json();
+      if (json.items?.length > 0) {
+        cache[id] = json.items[0].snippet;
+        cacheUpdate({
+          media_id: id,
+          source: "youtube",
+          data: JSON.stringify(json.items[0])
+        });
+        return json.items[0].snippet;
+      } else {
+        return null;
+      }
     }
   }
 };

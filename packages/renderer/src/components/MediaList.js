@@ -20,19 +20,28 @@ const MediaList = ({ media }) => {
   const { prefs, _setPrefs } = useContext(AppContext);
   const mediaList = [...new Set(media.map((item) => item.data.url))];
   const [mediaTitle, setMediaTitle] = useState({});
+
   useEffect(() => {
-    mediaList.forEach(async (url) => {
-      const info = await youTube.resolveYoutubeInfo({
-        key: prefs.googleApiKey,
-        url
+    const getCache = async () => {
+      const data = await window.databaseAPI.mediaGet(
+        mediaList.map((item) => youTube.extractYoutubeId(item)).filter(Boolean)
+      );
+      mediaList.forEach(async (url) => {
+        const info = await youTube.resolveYoutubeInfo({
+          cache: data,
+          key: prefs.googleApiKey,
+          url,
+          cacheUpdate: (item) => window.databaseAPI.mediaSet(item)
+        });
+        setMediaTitle((mediaTitle) => {
+          return {
+            ...mediaTitle,
+            [url]: <MediaTile data={info} />
+          };
+        });
       });
-      setMediaTitle((mediaTitle) => {
-        return {
-          ...mediaTitle,
-          [url]: <MediaTile data={info} />
-        };
-      });
-    });
+    };
+    getCache();
   }, [media]);
 
   return (

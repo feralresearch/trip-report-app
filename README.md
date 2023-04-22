@@ -46,3 +46,14 @@ git push --tags
 
 C:\Users\An\AppData\Roaming\TripReport\config.json
 npx asar extract app.asar APPASAR
+
+## API Structure
+
+- Provide an action handle for what you want to do in (packages/main/src/standalone/modules/actions.js)
+
+- Establish methods in preload which can be invoked via
+  renderer (packages/preload/src/index.ts)
+
+- The actual action-handling code lives in main (packages/main/src/index.ts)
+
+- Invocation is via the window.XXXAPI object
