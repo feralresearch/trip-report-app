@@ -3,6 +3,7 @@ import fs from "fs";
 import sharp from "sharp";
 import { fdir } from "fdir";
 import { makeDir } from "./util.js";
+import { parseVrchatScreenshotName } from "./vrcScreenshotsUtil.js";
 
 const _ingestScreenshot = (screenshot, directoryCache, onLog, forceRebuild) => {
   if (fs.existsSync(screenshot.original) && !forceRebuild) {
@@ -45,32 +46,6 @@ const _ingestScreenshot = (screenshot, directoryCache, onLog, forceRebuild) => {
 };
 
 const vrcScreenshots = {
-  fileNameToPath: (fileName, dataDir) => {
-    const metaData = vrcScreenshots.parseVrchatScreenshotName(fileName);
-    const filePath = `${dataDir}/assets/${metaData.year}/${
-      metaData.month
-    }/${fileName.replace(".png", "")}/original.png`;
-    return filePath;
-  },
-  parseVrchatScreenshotName: (fileName) => {
-    const fileNameSplit = fileName.replaceAll("NYE23-", "NYE23_").split("_");
-    const metaData = fileNameSplit[1].includes("x")
-      ? {
-          month: fileNameSplit[2]?.split("-")[1],
-          day: fileNameSplit[2]?.split("-")[2],
-          year: fileNameSplit[2]?.split("-")[0],
-          width: fileNameSplit[1]?.split("x")[0],
-          height: fileNameSplit[1]?.split("x")[1]
-        }
-      : {
-          month: fileNameSplit[1]?.split("-")[1],
-          day: fileNameSplit[1]?.split("-")[2],
-          year: fileNameSplit[1]?.split("-")[0],
-          width: parseInt(fileNameSplit[3]?.split("x")[0], 10),
-          height: parseInt(fileNameSplit[3]?.split("x")[1], 10)
-        };
-    return metaData;
-  },
   buildDirectoryCache: ({ vrcScreenshotDir, onLog }) => {
     if (!vrcScreenshotDir) {
       onLog("ERROR: Please specify a screenshot directory");
@@ -109,7 +84,7 @@ const vrcScreenshots = {
       const logged = item.event.split("screenshot to: ")[1];
       if (!logged) return null;
       const fileName = path.basename(logged?.replaceAll("\\", "/"));
-      const data = vrcScreenshots.parseVrchatScreenshotName(fileName);
+      const data = parseVrchatScreenshotName(fileName);
       const filePath = path.join(
         preferences.dataDir,
         "assets",
@@ -138,10 +113,5 @@ const vrcScreenshots = {
   }
 };
 
-export const {
-  buildDirectoryCache,
-  ingestScreenshots,
-  parseVrchatScreenshotName,
-  fileNameToPath
-} = vrcScreenshots;
+export const { buildDirectoryCache, ingestScreenshots } = vrcScreenshots;
 export default vrcScreenshots;

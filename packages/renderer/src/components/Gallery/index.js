@@ -1,0 +1,179 @@
+import React, { useState, useContext, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { AppContext } from "../../App";
+import { RiFolderDownloadFill } from "react-icons/ri";
+import { parseVrchatScreenshotName } from "../../../../main/src/standalone/modules/vrcScreenshotsUtil.js";
+import Zoomed from "./Zoomed";
+import styles from "./styles";
+import Collapsable from "../Collapsable";
+import { BsHeart, BsHeartFill } from "react-icons/bs";
+
+const Gallery = ({ imageContext, screenshots, onExport }) => {
+  const { prefs } = useContext(AppContext);
+  if (!prefs.dataDir) return null;
+  const assetPath = encodeURI(`asset://${prefs.dataDir}/assets`);
+
+  const [prevImage, setPrevImage] = useState(null);
+  const [nextImage, setNextImage] = useState(null);
+  const [zoomedImage, _setZoomedImage] = useState(null);
+  const [cacheBust, setCacheBust] = useState(uuidv4());
+  const [filterOnFavorites, setFilterOnFavorites] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [screenshotList, setScreenshotList] = useState(screenshots);
+
+  const onToggleFavorites = (e) => {
+    e.stopPropagation();
+    setFilterOnFavorites(!filterOnFavorites);
+  };
+
+  const setZoomedImage = (value) => {
+    const nextIdx =
+      screenshots.indexOf(value) + 1 < screenshots.length
+        ? screenshots.indexOf(value) + 1
+        : 0;
+    const prevIdx =
+      screenshots.indexOf(value) - 1 >= 0
+        ? screenshots.indexOf(value) - 1
+        : screenshots.length - 1;
+
+    setNextImage(screenshots[nextIdx]);
+    setPrevImage(screenshots[prevIdx]);
+    _setZoomedImage(value);
+  };
+
+  const getFavorites = async () => {
+    let data = await window.databaseAPI.screenshotGet(
+      screenshots.map((item) => item.data.fileName)
+    );
+    data = Array.isArray(data) ? data : [data];
+    const favList = data?.filter((item) => item?.favorite === 1);
+    setFavorites(favList);
+    doFilterOnFavorites(favList);
+  };
+
+  const doFilterOnFavorites = (favList) => {
+    if (filterOnFavorites) {
+      setScreenshotList(
+        screenshots.filter((item) =>
+          favList.map((item) => item.filename).includes(item.data.fileName)
+        )
+      );
+    } else {
+      setScreenshotList(screenshots);
+    }
+  };
+
+  useEffect(() => {
+    if (filterOnFavorites) {
+      setScreenshotList(
+        screenshots.filter((item) =>
+          favorites.map((item) => item.filename).includes(item.data.fileName)
+        )
+      );
+    } else {
+      setScreenshotList(screenshots);
+    }
+    getFavorites();
+  }, [screenshots]);
+
+  useEffect(() => {
+    doFilterOnFavorites(favorites);
+  }, [filterOnFavorites]);
+
+  return (
+    <Collapsable
+      isOpen={true}
+      title={
+        <div
+          style={{
+            minWidth: "calc(100vw - 25.4rem)",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            background: "#dddddd",
+            borderRadius: "0.3rem",
+            padding: "0 .25rem",
+            height: "3rem"
+          }}
+        >
+          <div>
+            {screenshots.length} image{screenshots.length != 1 && "s"} |{" "}
+            {favorites.length} favorite{favorites.length != 1 && "s"}
+          </div>
+          <div style={{ flexGrow: 1 }} />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center"
+            }}
+          >
+            <div onClick={onToggleFavorites} style={{ marginRight: ".5rem" }}>
+              {(filterOnFavorites && <BsHeartFill />) || <BsHeart />}
+            </div>
+            <div onClick={onExport}>
+              <RiFolderDownloadFill style={{ fontSize: "1.5rem" }} />
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <div key={cacheBust}>
+        <Zoomed
+          imageContext={imageContext}
+          image={zoomedImage}
+          assetPath={assetPath}
+          cacheBust={cacheBust}
+          onRotate={() => setCacheBust(uuidv4())}
+          counter={`${screenshots.indexOf(zoomedImage) + 1} of ${
+            screenshots.length
+          }`}
+          onNext={() => setZoomedImage(nextImage)}
+          onPrev={() => setZoomedImage(prevImage)}
+          onOutsideClick={() => {
+            getFavorites();
+            setZoomedImage(null);
+          }}
+        />
+
+        <div style={styles.gallery}>
+          {screenshotList.map((image, idx) => {
+            if (
+              favorites.find((item) => item.fileName === image.data.fileName)
+            ) {
+              return <div>Fav</div>;
+            }
+            const metaData = parseVrchatScreenshotName(image.data.fileName);
+            const thumbnailUrl = `${assetPath}/${metaData.year}/${
+              metaData.month
+            }/${image.data.fileName.replace(
+              ".png",
+              ""
+            )}/thumbnail.png?id=${uuidv4()}`;
+            return (
+              <div
+                onClick={() => setZoomedImage(image)}
+                key={idx}
+                style={styles.galleryImgWrapper}
+              >
+                <img
+                  draggable={false}
+                  style={styles.galleryImg}
+                  alt={image.data.fileName}
+                  src={thumbnailUrl}
+                  onError={({ currentTarget }) => {
+                    console.log(currentTarget.src);
+                    currentTarget.onerror = null;
+                    currentTarget.src = "/assets/missing.png";
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </Collapsable>
+  );
+};
+
+export default Gallery;

@@ -19,8 +19,10 @@ const youTube = {
     return match && match[7].length === 11 ? match[7] : false;
   },
   getYoutubeInfo: async ({ key, id, cache, cacheUpdate }) => {
-    const cached = cache.find((item) => item.media_id === id);
-    if (cached) {
+    const cached = cache?.find
+      ? cache.find((item) => item.media_id === id)
+      : [];
+    if (cached.data) {
       return JSON.parse(cached.data).snippet;
     } else {
       const url = `https://www.googleapis.com/youtube/v3/videos?key=${key}&part=snippet&id=${id}`;
@@ -31,7 +33,7 @@ const youTube = {
       });
       const json = await response.json();
       if (json.items?.length > 0) {
-        cache[id] = json.items[0].snippet;
+        if (cache) cache[id] = json.items[0].snippet;
         cacheUpdate({
           media_id: id,
           source: "youtube",

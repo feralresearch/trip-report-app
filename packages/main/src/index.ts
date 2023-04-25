@@ -21,7 +21,7 @@ import icon from "../../../buildResources/icon_19x19.png";
 import type { ChildProcess } from "child_process";
 import { fork } from "child_process";
 import { knexInit } from "./standalone/modules/knex/knexfile.js";
-import { fileNameToPath } from "./standalone/modules/vrcScreenshots.js";
+import { fileNameToPath } from "./standalone/modules/vrcScreenshotsUtil.js";
 import * as fs from "fs";
 import prefs from "./standalone/modules/prefs.js";
 import path from "path";
@@ -478,6 +478,11 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
 
       // SCREENSHOTS
       ipcMain.handle(ACTIONS.SCREENSHOT_SET, (_event, data) => {
+        data = {
+          ...data,
+          usrs_in_image: JSON.stringify(data.usrs_in_image),
+          tags: JSON.stringify(data.tags)
+        };
         return upsert({
           knex,
           table: "screenshot",
@@ -487,13 +492,29 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
         });
       });
 
-      ipcMain.handle(ACTIONS.SCREENSHOT_GET, (_event, fileName) => {
-        return read({
+      ipcMain.handle(ACTIONS.SCREENSHOT_GET, async (_event, fileName) => {
+        const attemptParse = (data: string) => {
+          let retval;
+          try {
+            retval = JSON.parse(data);
+          } catch (e) {
+            retval = data;
+          }
+          return retval;
+        };
+        const data = await read({
           knex,
           table: "screenshot",
           idField: "filename",
-          id: fileName
+          id: fileName,
+          orderBy: "id"
         });
+
+        return data.map((item) => ({
+          ...item,
+          usrs_in_image: attemptParse(item.usrs_in_image),
+          tags: attemptParse(item.tags)
+        }));
       });
 
       ipcMain.handle(

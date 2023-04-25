@@ -19,9 +19,34 @@ const Instance = () => {
   }, [params.id]);
 
   const info = data?.filter((datum) => datum.tag === "world_enter")[0]?.data;
-  const players = data?.filter((datum) => datum.tag === "player");
-  const media = data?.filter((datum) => datum.tag === "media");
+  const players = [
+    ...new Set(
+      data?.filter((datum) => datum.tag === "player").map((item) => item)
+    )
+  ];
+
+  const media = [
+    ...new Set(
+      data
+        ?.filter(
+          (datum) =>
+            datum.tag === "media" &&
+            datum.event.includes("[Video Playback] Attempting to resolve")
+        )
+        .map((item) => item)
+    )
+  ];
   const screenshots = data?.filter((datum) => datum.tag === "screenshot");
+  const imageContext = {
+    info,
+    world: {
+      name: info?.name,
+      url: info?.url,
+      wrld_id: info?.url.replace("https://vrchat.com/home/world/", "")
+    },
+    players: players?.map((player) => player.data.name)
+  };
+
   if (!info) return null;
   return (
     <div>
@@ -47,6 +72,7 @@ const Instance = () => {
         {screenshots.length > 0 && (
           <div style={styles.section}>
             <Gallery
+              imageContext={imageContext}
               screenshots={screenshots}
               onExport={() => window.databaseAPI.exportAsset(params.id)}
             />

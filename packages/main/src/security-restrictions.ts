@@ -39,6 +39,8 @@ const ALLOWED_ORIGINS_AND_PERMISSIONS = new Map<string, Set<Permissions>>(
  * >
  */
 const ALLOWED_EXTERNAL_ORIGINS = new Set<`https://${string}`>([
+  "https://foxriot.com",
+  "https://vrchat.com",
   "https://github.com",
   "https://www.youtube.com"
 ]);
@@ -63,6 +65,9 @@ app.on("web-contents-created", (_, contents) => {
 
     if (import.meta.env.DEV) {
       console.warn(`Blocked navigating to disallowed origin: ${origin}`);
+      console.warn(
+        `Allowed: ${JSON.stringify(ALLOWED_ORIGINS_AND_PERMISSIONS)}`
+      );
     }
   });
 

@@ -14,12 +14,14 @@ const schema = {
       import_id: { type: "string", nullable: false }
     },
     screenshot: {
-      filename: { type: "string", nullable: false },
-      wrld_id: { type: "string", nullable: false },
-      usrs_in_image: { type: "string", nullable: false },
-      tags: { type: "string", nullable: true },
+      ts: { type: "dateTime", nullable: false },
+      filename: { type: "string", nullable: false, unique: true },
+      photographer: { type: "string", nullable: true },
+      wrld_id: { type: "string", nullable: true },
+      usrs_in_image: { type: "json", nullable: true },
+      tags: { type: "json", nullable: true },
       favorite: { type: "boolean", nullable: true },
-      usrs_in_world: { type: "string", nullable: false },
+      usrs_in_world: { type: "json", nullable: true },
       notes: { type: "string", nullable: true }
     },
     world: {

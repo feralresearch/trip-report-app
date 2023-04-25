@@ -57,14 +57,16 @@ export const upsert = async ({
 }) => {
   if (!knex) return;
   try {
-    const existingMedia = await knex
+    const existingRecord = await knex
       .select("*")
       .from(table)
-      .where({ [idField]: id })
-      .orderBy("ts", "desc");
-    if (existingMedia[0]) {
-      const existingData = existingMedia[0];
+      .modify((q) => {
+        if (id) q.where(idField, "IN", Array.isArray(id) ? id : [id]);
+      });
+    if (existingRecord.length > 0) {
+      const existingData = existingRecord[0];
       data = { ...existingData, ...data, ts: Date.now() };
+      delete data.id;
       await knex(table)
         .update(data)
         .where({ [idField]: id })
@@ -77,6 +79,7 @@ export const upsert = async ({
         ...data,
         ts: Date.now()
       };
+      delete newData.id;
       let newId;
       await knex(table)
         .insert(newData)
@@ -88,34 +91,34 @@ export const upsert = async ({
         });
       return newId ? { id: newId[0], ...newData } : null;
     } else {
-      return {};
+      return null;
     }
   } catch (error) {
+    console.error(error);
     return error;
   }
 };
-export const read = async ({ knex, table, idField, id }) => {
+export const read = async ({
+  knex,
+  table,
+  idField,
+  id,
+  orderBy = "ts desc"
+}) => {
+  id = Array.isArray(id) ? id : [id];
   if (!knex) return;
+
   try {
-    if (!id) {
-      const newData = await knex.select("*").from(table).orderBy("ts", "desc");
-      return newData;
-    } else if (Array.isArray(id)) {
-      const newData = await knex
-        .select("*")
-        .from(table)
-        .where(idField, "IN", id)
-        .orderBy("ts", "desc");
-      return newData;
-    } else {
-      const newData = await knex
-        .select("*")
-        .from(table)
-        .where({ [idField]: id })
-        .orderBy("ts", "desc");
-      return newData[0] ? newData[0] : {};
-    }
+    const data = await knex
+      .select("*")
+      .from(table)
+      .modify((q) => {
+        if (id) q.where(idField, "IN", id);
+        if (orderBy.length > 0) q.orderByRaw(orderBy);
+      });
+    return data;
   } catch (e) {
+    console.error(e);
     return e;
   }
 };
@@ -125,6 +128,7 @@ export const destroy = async ({ knex, table, idField, id }) => {
     await knex(table).delete().whereIn(idField, [id]);
     return {};
   } catch (e) {
+    console.error(e);
     return e;
   }
 };

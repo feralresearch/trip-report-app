@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AppContext } from "../App";
 import youTube from "../modules/youTube";
+import Collapsable from "./Collapsable";
 
 const MediaTile = ({ data }) => (
   <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
@@ -45,10 +46,7 @@ const MediaList = ({ media }) => {
   }, [media]);
 
   return (
-    <div>
-      <div>
-        <h3>{mediaList.length} media links</h3>
-      </div>
+    <Collapsable title={`${mediaList.length} media links`}>
       <div>
         {mediaList.map((url, idx) => (
           <div key={idx}>
@@ -58,7 +56,7 @@ const MediaList = ({ media }) => {
           </div>
         ))}
       </div>
-    </div>
+    </Collapsable>
   );
 };
 export default MediaList;
