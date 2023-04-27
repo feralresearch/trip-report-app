@@ -24,12 +24,12 @@ const MediaList = ({ media }) => {
 
   useEffect(() => {
     const getCache = async () => {
-      const data = await window.databaseAPI.mediaGet(
+      const cache = await window.databaseAPI.mediaGet(
         mediaList.map((item) => youTube.extractYoutubeId(item)).filter(Boolean)
       );
       mediaList.forEach(async (url) => {
         const info = await youTube.resolveYoutubeInfo({
-          cache: data,
+          cache,
           key: prefs.googleApiKey,
           url,
           cacheUpdate: (item) => window.databaseAPI.mediaSet(item)

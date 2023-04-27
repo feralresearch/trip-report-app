@@ -22,7 +22,7 @@ const youTube = {
     const cached = cache?.find
       ? cache.find((item) => item.media_id === id)
       : [];
-    if (cached.data) {
+    if (cached?.data) {
       return JSON.parse(cached.data).snippet;
     } else {
       const url = `https://www.googleapis.com/youtube/v3/videos?key=${key}&part=snippet&id=${id}`;

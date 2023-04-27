@@ -46,3 +46,12 @@ td {
 *::-webkit-scrollbar {
   display: none;
 }
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

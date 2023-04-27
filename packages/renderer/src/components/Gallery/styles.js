@@ -56,12 +56,14 @@ export default {
   zoomImgWrapper: {
     position: "relative",
     boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
-    maxHeight: "90vh"
+    maxHeight: "90vh",
+    minWidth: "70vw"
   },
   zoomImg: {
     userSelect: "none",
     width: "100%",
-    maxHeight: "90vh",
+    maxHeight: "70vh",
+    margin: "auto",
     boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px"
   },
   favoriteButton: {
@@ -75,5 +77,21 @@ export default {
     textAlign: "center",
     color: "white",
     fontSize: "2rem"
+  },
+  positionedTag: {
+    position: "absolute",
+    display: "flex",
+    flexDirection: "row",
+    background: "white",
+    marginRight: "0.4rem",
+    padding: "0.2rem 1rem",
+    fontWeight: "900",
+    fontSize: ".8rem",
+    borderRadius: "1rem",
+    opacity: "0.5",
+    minWidth: "100px",
+    textAlign: "center",
+    margin: ".2rem .2rem .2rem 0",
+    boxShadow: "rgb(0 0 0) 0px 0px 9px 3px"
   }
 };

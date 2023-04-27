@@ -36,16 +36,33 @@ const Zoomed = ({
 }) => {
   const wrapperRef = useRef(null);
   const imgRef = useRef(null);
-  const [imageMetadata, setImageMetadata] = useState({});
+  const [imageMetadata, setImageMetadata] = useState(null);
   const [showTagPickerAt, setShowTagPickerAt] = useState(null);
   const [mouseDown, setMouseDown] = useState({ top: 0, left: 0 });
   const [mouseDownNormalized, setMouseDownNormalized] = useState();
-  const [notes, setNotes] = useState("");
+  const [unFuck, setUnFuck] = useState(Math.random());
+  const [dimensions, setDimensions] = React.useState({
+    height: window.innerHeight,
+    width: window.innerWidth
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions({
+        height: window.innerHeight,
+        width: window.innerWidth
+      });
+      setUnFuck(Math.random());
+    };
+
+    window.addEventListener("resize", handleResize);
+    return window.removeEventListener("resize", handleResize);
+  });
 
   const patchMetadata = (patch, updateDb = true) => {
     setImageMetadata((data) => {
+      //console.log(Date.now() + " CALLING...." + image.data.fileName);
       const dbUpdate = { ...data, ...patch };
-      setNotes(dbUpdate.notes);
       delete dbUpdate.context;
       if (updateDb) window.databaseAPI.screenshotSet(dbUpdate);
       return { ...data, ...patch };
@@ -54,31 +71,28 @@ const Zoomed = ({
 
   // Retrieve or initialize image metadata
   useEffect(() => {
-    if (!image) return;
-
-    const getMetadata = async () => {
-      const metaData = await window.databaseAPI.screenshotGet(
-        image.data.fileName
-      );
-      if (metaData[0]) {
-        console.log(metaData[0]);
-        patchMetadata({ ...metaData[0], context: imageContext }, false);
-      } else {
-        const initialData = {
-          filename: image.data.fileName,
-          wrld_id: imageContext.world.name,
-          photographer:
-            imageContext.players.length === 1 ? imageContext.players[0] : "",
-          usrs_in_image: [],
-          usrs_in_world: imageContext.players,
-          tags: [],
-          favorite: false,
-          notes: ""
-        };
-        patchMetadata({ ...initialData, context: imageContext });
-      }
-    };
-    getMetadata();
+    if (image) {
+      const getMetadata = async () => {
+        const metaData = await window.databaseAPI.screenshotGet(
+          image.data.fileName
+        );
+        if (metaData[0]) {
+          patchMetadata({ ...metaData[0], context: imageContext }, false);
+        } else {
+          const initialData = {
+            filename: image.data.fileName,
+            wrld_id: imageContext.world.name,
+            photographer:
+              imageContext.players.length === 1 ? imageContext.players[0] : "",
+            usrs_in_world: imageContext.players,
+            favorite: false,
+            notes: ""
+          };
+          patchMetadata({ ...initialData, context: imageContext });
+        }
+      };
+      getMetadata();
+    }
   }, [image]);
 
   // UI cleanup helper
@@ -95,11 +109,49 @@ const Zoomed = ({
 
   // Rotation handlers
   const rotate = (deg) => {
+    [...document.getElementsByClassName("positionedTag")].forEach(
+      (el) => (el.style.opacity = 0)
+    );
+
+    const rotateCoordinates = (coordinates, degrees) => {
+      degrees = degrees === -90 ? 270 : 90;
+      const radians = degrees * (Math.PI / 180);
+      const { x, y } = coordinates;
+      const sin = Math.sin(radians);
+      const cos = Math.cos(radians);
+      const rot = {
+        x: cos * (x - 0.5) + sin * (y - 0.5),
+        y: cos * (y - 0.5) - sin * (x - 0.5)
+      };
+      return {
+        x: rot.x + 0.5,
+        y: rot.y + 0.5
+      };
+    };
+
+    const rotatedUserTags = imageMetadata.usrs_in_image?.map((item) => {
+      item = JSON.parse(item);
+      const rc = rotateCoordinates(item.position, deg);
+      return {
+        ...item,
+        position: {
+          x: rc.x,
+          y: rc.y
+        }
+      };
+    });
+
     window.databaseAPI.rotateImage(image.data.fileName, deg, () => {
       onRotate();
       const newSrc = `${imgRef.current.src.split("?")[0]}?id=${uuidv4()}`;
       imgRef.current.src = newSrc;
     });
+
+    const usrs_in_image = rotatedUserTags
+      ? rotatedUserTags.map((item) => JSON.stringify(item))
+      : [];
+
+    patchMetadata({ usrs_in_image });
   };
   const onRotateLeft = () => rotate(-90);
   const onRotateRight = () => rotate(90);
@@ -120,7 +172,7 @@ const Zoomed = ({
   }/${image.data.fileName.replace(".png", "")}`;
   const imgSrc_preview = `${imgSrcPath}/preview.png`;
 
-  const positionedTags = imageMetadata.usrs_in_image?.map((item) =>
+  const positionedTags = imageMetadata?.usrs_in_image?.map((item) =>
     JSON.parse(item)
   );
   if (!imageMetadata) return null;
@@ -155,7 +207,8 @@ const Zoomed = ({
             {DateTime.fromMillis(image.ts).toLocaleString(
               DateTime.DATETIME_FULL
             )}
-          </div>
+          </div>{" "}
+          <div>{image.data.fileName}</div>
         </div>
         <div style={{ flexGrow: 1 }} />
         <div className="button" onClick={onDownload}>
@@ -181,25 +234,17 @@ const Zoomed = ({
         >
           {(imageMetadata.favorite && <BsHeartFill />) || <BsHeart />}
         </div>
-        <div ref={wrapperRef} style={styles.zoomImgWrapper}>
+        <div
+          key={dimensions.width}
+          ref={wrapperRef}
+          style={styles.zoomImgWrapper}
+        >
           {positionedTags?.map((item, idx) => (
             <div
+              className="positionedTag"
               key={idx}
               style={{
-                position: "absolute",
-                display: "flex",
-                opacity: "0.5",
-                flexDirection: "row",
-                background: "white",
-                marginRight: "0.4rem",
-                padding: "0.2rem 1rem",
-                fontWeight: "900",
-                fontSize: ".8rem",
-                borderRadius: "1rem",
-                minWidth: "100px",
-                textAlign: "center",
-                margin: ".2rem .2rem .2rem 0",
-                boxShadow: "rgb(0 0 0) 0px 0px 9px 3px",
+                ...styles.positionedTag,
                 top: `${imgRef.current?.height * item.position.x}px`,
                 left: `${imgRef.current?.width * item.position.y - 50}px`
               }}
@@ -208,6 +253,7 @@ const Zoomed = ({
             </div>
           ))}
           <img
+            alt={unFuck}
             draggable={false}
             key={cacheBust}
             ref={imgRef}
@@ -231,6 +277,9 @@ const Zoomed = ({
             alt={image.data.fileName}
             style={styles.zoomImg}
             src={`${imgSrc_preview}?id=${cacheBust}`}
+            onLoad={() => {
+              setUnFuck(Math.random()); //Forces redraw tags
+            }}
           />
           {imageMetadata.context && (
             <div
@@ -281,17 +330,24 @@ const Zoomed = ({
                   <div style={styles.row}>
                     <div style={styles.rowLabel}>Tags:</div>
                     <div>
-                      <Tags tags={imageMetadata.tags} />
+                      <input
+                        onChange={(e) =>
+                          patchMetadata({ tags: e.target.value })
+                        }
+                        type="text"
+                        value={imageMetadata.tags ? imageMetadata.tags : ""}
+                      />
                     </div>
                   </div>
                   <div style={styles.row}>
                     <div style={styles.rowLabel}>Notes:</div>
                     <div>
                       <input
-                        onBlur={(e) => patchMetadata({ notes: e.target.value })}
-                        onChange={(e) => setNotes(e.target.value)}
+                        onChange={(e) =>
+                          patchMetadata({ notes: e.target.value })
+                        }
                         type="text"
-                        value={notes ? notes : ""}
+                        value={imageMetadata.notes ? imageMetadata.notes : ""}
                       />
                     </div>
                   </div>

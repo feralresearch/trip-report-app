@@ -61,14 +61,13 @@ const util = {
       console.error("[ 🚨 ]: ", e);
     }
   },
-  debounce: (callback, wait) => {
-    // https://www.joshwcomeau.com/snippets/javascript/debounce/
-    let timeoutId = null;
+  debounce: (func, timeout = 1000) => {
+    let timer;
     return (...args) => {
-      global.clearTimeout(timeoutId);
-      timeoutId = global.setTimeout(() => {
-        callback.apply(null, args);
-      }, wait);
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        func.apply(this, args);
+      }, timeout);
     };
   },
   envBool: (value) => {

@@ -95,7 +95,7 @@ export const upsert = async ({
     }
   } catch (error) {
     console.error(error);
-    return error;
+    return null;
   }
 };
 export const read = async ({

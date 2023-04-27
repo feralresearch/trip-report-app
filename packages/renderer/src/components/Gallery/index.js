@@ -17,13 +17,14 @@ const Gallery = ({ imageContext, screenshots, onExport }) => {
   const [nextImage, setNextImage] = useState(null);
   const [zoomedImage, _setZoomedImage] = useState(null);
   const [cacheBust, setCacheBust] = useState(uuidv4());
-  const [filterOnFavorites, setFilterOnFavorites] = useState(false);
+  const [filterOnFavorites, setFilterOnFavorites] = useState(0);
   const [favorites, setFavorites] = useState([]);
   const [screenshotList, setScreenshotList] = useState(screenshots);
 
   const onToggleFavorites = (e) => {
     e.stopPropagation();
-    setFilterOnFavorites(!filterOnFavorites);
+    const val = filterOnFavorites + 1;
+    setFilterOnFavorites(val > 2 ? 0 : val);
   };
 
   const setZoomedImage = (value) => {
@@ -52,7 +53,7 @@ const Gallery = ({ imageContext, screenshots, onExport }) => {
   };
 
   const doFilterOnFavorites = (favList) => {
-    if (filterOnFavorites) {
+    if (filterOnFavorites === 2) {
       setScreenshotList(
         screenshots.filter((item) =>
           favList.map((item) => item.filename).includes(item.data.fileName)
@@ -108,8 +109,14 @@ const Gallery = ({ imageContext, screenshots, onExport }) => {
               alignItems: "center"
             }}
           >
-            <div onClick={onToggleFavorites} style={{ marginRight: ".5rem" }}>
-              {(filterOnFavorites && <BsHeartFill />) || <BsHeart />}
+            <div
+              onClick={onToggleFavorites}
+              style={{
+                marginRight: ".5rem",
+                opacity: filterOnFavorites > 0 ? 1 : 0.2
+              }}
+            >
+              {(filterOnFavorites === 2 && <BsHeartFill />) || <BsHeart />}
             </div>
             <div onClick={onExport}>
               <RiFolderDownloadFill style={{ fontSize: "1.5rem" }} />
@@ -158,7 +165,16 @@ const Gallery = ({ imageContext, screenshots, onExport }) => {
               >
                 <img
                   draggable={false}
-                  style={styles.galleryImg}
+                  style={{
+                    ...styles.galleryImg,
+                    opacity: favorites.find(
+                      (item) => item.filename === image.data.fileName
+                    )
+                      ? 1
+                      : filterOnFavorites === 1
+                      ? 0.5
+                      : 1
+                  }}
                   alt={image.data.fileName}
                   src={thumbnailUrl}
                   onError={({ currentTarget }) => {

@@ -32,7 +32,7 @@ let logWatcherProcess: ChildProcess;
 sharp.cache(false);
 
 // Disable Hardware Acceleration to save more system resources.
-app.disableHardwareAcceleration();
+//app.disableHardwareAcceleration();
 
 const prefsFile = path.join(app.getPath("userData"), "config.json");
 const vrcLogDir = path.join(
