@@ -4,9 +4,9 @@ export default {
     flexDirection: "row",
     alignItems: "center",
     margin: ".25rem",
-    minHeight: "1.5rem"
+    minHeight: "2rem"
   },
-  rowLabel: { fontWeight: 900, minWidth: "10rem", minHeight: "2rem" },
+  rowLabel: { fontWeight: 900, minWidth: "10rem", marginLeft: "1rem" },
   gallery: {
     display: "flex",
     flexDirection: "row",
@@ -55,21 +55,26 @@ export default {
   },
   zoomImgWrapper: {
     position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
     boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
-    maxHeight: "90vh",
-    minWidth: "70vw"
+    height: "860px",
+    maxWidth: "70vw",
+    backgroundColor: "#222222", //"#414141",
+    width: "1000px",
+    minWidth: "1000px",
+    overflow: "hidden",
+    borderRadius: "0.3rem"
   },
   zoomImg: {
     userSelect: "none",
-    width: "100%",
-    maxHeight: "70vh",
+    maxHeight: "600px",
+    maxWidth: "100%",
     margin: "auto",
     boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px"
   },
   favoriteButton: {
-    position: "absolute",
-    top: 60,
-    right: 60,
     paddingTop: ".5rem",
     zIndex: 1,
     width: "3rem",
@@ -93,5 +98,18 @@ export default {
     textAlign: "center",
     margin: ".2rem .2rem .2rem 0",
     boxShadow: "rgb(0 0 0) 0px 0px 9px 3px"
+  },
+  metadataPanel: {
+    position: "absolute",
+    bottom: 0,
+    height: "13rem",
+    width: "100%",
+    background: "#ffffff99",
+    color: "white",
+    overflow: "scroll"
+  },
+  note: {
+    fontFamily: "monospace",
+    color: "#545454"
   }
 };

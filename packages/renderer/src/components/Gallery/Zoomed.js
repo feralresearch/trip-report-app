@@ -1,22 +1,25 @@
-import React, { useState, useRef, useEffect } from "react";
-import Mousetrap from "mousetrap";
+import React, { useState, useRef, useEffect, memo } from "react";
 import { DateTime } from "luxon";
 import { v4 as uuidv4 } from "uuid";
-import { MdRotateLeft, MdRotateRight } from "react-icons/md";
 import { BsHeart, BsHeartFill } from "react-icons/bs";
-import { TbDownload } from "react-icons/tb";
 import { parseVrchatScreenshotName } from "../../../../main/src/standalone/modules/vrcScreenshotsUtil.js";
 import styles from "./styles";
-import Tags from "../Tags.js";
-import { TiUserAdd } from "react-icons/ti";
 import TagPicker from "./TagPicker.js";
-import Collapsable from "../Collapsable/index.js";
+import EditableTagset from "../EditableTagset.js";
+import PeopleInWorld from "./PeopleInWorld.js";
+import Photographer from "./Photographer.js";
+import PeopleInImage from "./PeopleInImage.js";
+import EditableText from "../EditableText.js";
+import PositionedTag from "./PositionedTag.js";
+import { MdRotateLeft, MdRotateRight } from "react-icons/md";
+import { TbDownload } from "react-icons/tb";
+import useMousetrap from "react-hook-mousetrap";
 
 const useOutsideAlerter = (ref, onOutsideClick) => {
   useEffect(() => {
     function handleClickOutside(e) {
       if (e.target.tagName === "svg" || e.target.tagName === "path") return;
-      if (ref.current && !ref.current.contains(e.target)) onOutsideClick(e);
+      if (ref.current && !ref.current?.contains(e.target)) onOutsideClick(e);
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -34,10 +37,11 @@ const Zoomed = ({
   assetPath,
   imageContext
 }) => {
-  const wrapperRef = useRef(null);
+  const containerRef = useRef(null);
   const imgRef = useRef(null);
+  const refZoomedPanel = useRef(null);
   const [imageMetadata, setImageMetadata] = useState(null);
-  const [showTagPickerAt, setShowTagPickerAt] = useState(null);
+  const [showTagPicker, setShowTagPicker] = useState(null);
   const [mouseDown, setMouseDown] = useState({ top: 0, left: 0 });
   const [mouseDownNormalized, setMouseDownNormalized] = useState();
   const [unFuck, setUnFuck] = useState(Math.random());
@@ -46,19 +50,33 @@ const Zoomed = ({
     width: window.innerWidth
   });
 
+  const onDownload = () => window.databaseAPI.exportAsset(image?.data.fileName);
+  useMousetrap("esc", onOutsideClick, "keyup");
+  useMousetrap("right", onNext, "keyup");
+  useMousetrap("left", onPrev, "keyup");
+  useMousetrap("l", () => rotate(-90), "keyup");
+  useMousetrap("r", () => rotate(90), "keyup");
+  useMousetrap("d", onDownload, "keyup");
+  useMousetrap(
+    "f",
+    () => patchMetadata({ favorite: !imageMetadata.favorite }),
+    "keyup"
+  );
+
+  // Redraw tags on resize
   useEffect(() => {
     const handleResize = () => {
       setDimensions({
         height: window.innerHeight,
         width: window.innerWidth
       });
-      setUnFuck(Math.random());
+      setUnFuck(() => Math.random());
     };
-
     window.addEventListener("resize", handleResize);
     return window.removeEventListener("resize", handleResize);
   });
 
+  // Update metadata (localstate and db)
   const patchMetadata = (patch, updateDb = true) => {
     setImageMetadata((data) => {
       //console.log(Date.now() + " CALLING...." + image.data.fileName);
@@ -95,24 +113,17 @@ const Zoomed = ({
     }
   }, [image]);
 
-  // UI cleanup helper
-  const cleanupThen = (cb) => {
-    setShowTagPickerAt(null);
-    cb();
-  };
-
   // On Outside Click
-  useOutsideAlerter(wrapperRef, (e) => {
-    if (showTagPickerAt) return;
-    if (e.target.className !== "button") cleanupThen(onOutsideClick);
+  useOutsideAlerter(containerRef, (e) => {
+    console.log("Hi");
+    if (showTagPicker) return;
+    if (e.target.className !== "button") onOutsideClick();
   });
 
-  // Rotation handlers
+  // Rotation handler
   const rotate = (deg) => {
-    [...document.getElementsByClassName("positionedTag")].forEach(
-      (el) => (el.style.opacity = 0)
-    );
-
+    if (refZoomedPanel.current)
+      refZoomedPanel.current.style.visibility = "hidden";
     const rotateCoordinates = (coordinates, degrees) => {
       degrees = degrees === -90 ? 270 : 90;
       const radians = degrees * (Math.PI / 180);
@@ -153,17 +164,6 @@ const Zoomed = ({
 
     patchMetadata({ usrs_in_image });
   };
-  const onRotateLeft = () => rotate(-90);
-  const onRotateRight = () => rotate(90);
-  const onDownload = () => window.databaseAPI.exportAsset(image.data.fileName);
-
-  // Mousetrap
-  Mousetrap.bind("esc", () => cleanupThen(onOutsideClick), "keyup");
-  Mousetrap.bind("right", () => cleanupThen(onNext), "keyup");
-  Mousetrap.bind("left", () => cleanupThen(onPrev), "keyup");
-  Mousetrap.bind("l", () => cleanupThen(onRotateLeft), "keyup");
-  Mousetrap.bind("r", () => cleanupThen(onRotateRight), "keyup");
-  Mousetrap.bind("d", () => cleanupThen(onDownload), "keyup");
 
   if (!image) return null;
   const parsedFilename = parseVrchatScreenshotName(image.data.fileName);
@@ -172,215 +172,213 @@ const Zoomed = ({
   }/${image.data.fileName.replace(".png", "")}`;
   const imgSrc_preview = `${imgSrcPath}/preview.png`;
 
-  const positionedTags = imageMetadata?.usrs_in_image?.map((item) =>
-    JSON.parse(item)
-  );
+  const jsonParse = (data) => {
+    try {
+      return JSON.parse(data);
+    } catch {
+      return null;
+    }
+  };
+
+  const positionedTags = imageMetadata?.usrs_in_image
+    ?.map((item) => jsonParse(item))
+    .filter(Boolean);
   if (!imageMetadata) return null;
   return (
     <div style={styles.zoomContainer}>
-      {showTagPickerAt && (
+      {showTagPicker && (
         <TagPicker
-          onSelect={(tag) => {
-            const usrs_in_image = imageMetadata.usrs_in_image
-              ? [...imageMetadata.usrs_in_image]
-              : [];
-            if (!usrs_in_image.includes(tag))
-              usrs_in_image.push(
-                JSON.stringify({ position: mouseDownNormalized, tag: tag })
-              );
-            patchMetadata({ usrs_in_image });
-          }}
           top={mouseDown.top}
           left={mouseDown.left}
-          onOutsideClick={() => {
-            setShowTagPickerAt(null);
+          onSelect={(tag) => {
+            if (showTagPicker === "photographer") {
+              patchMetadata({ photographer: tag });
+            } else {
+              const usrs_in_image = imageMetadata.usrs_in_image
+                ? [...imageMetadata.usrs_in_image]
+                : [];
+              if (!usrs_in_image.includes(tag))
+                usrs_in_image.push(
+                  JSON.stringify({ position: mouseDownNormalized, tag: tag })
+                );
+              patchMetadata({ usrs_in_image });
+            }
           }}
-          point={showTagPickerAt}
+          onOutsideClick={() => setShowTagPicker(null)}
           imageMetadata={imageMetadata}
-          imageContext={imageContext}
         />
       )}
-      <div style={styles.zoomNavbar}>
-        <div>
-          <div>{counter}</div>
+
+      <div ref={containerRef} style={{ ...styles.zoomModalOverlay }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            position: "absolute",
+            top: 56,
+            zIndex: 1,
+            left: 60,
+            width: "89%",
+            margin: "auto",
+            fontSize: "1rem",
+            color: "white"
+          }}
+        >
           <div>
+            <div>
+              <div style={{ fontWeight: 900 }}>{counter}</div>
+              <div style={{ fontWeight: 900 }}>
+                {imageMetadata.context.world.name}
+              </div>
+              <div style={{ opacity: "0.7" }}></div>
+            </div>
+          </div>
+          <div style={{ flexGrow: 1, textAlign: "center", opacity: "0.7" }}>
+            {image.data.fileName}
+            <br />
             {DateTime.fromMillis(image.ts).toLocaleString(
               DateTime.DATETIME_FULL
             )}
-          </div>{" "}
-          <div>{image.data.fileName}</div>
+          </div>
+          <div
+            className="button"
+            onClick={onDownload}
+            style={styles.favoriteButton}
+          >
+            <TbDownload
+              style={{
+                fontSize: "2rem",
+                margin: "0 .25rem .25rem 0"
+              }}
+            />
+          </div>
+          <div
+            className="button"
+            onClick={() => rotate(-90)}
+            style={styles.favoriteButton}
+          >
+            <MdRotateLeft style={{ fontSize: "2rem" }} />
+          </div>
+          <div
+            className="button"
+            onClick={() => rotate(90)}
+            style={styles.favoriteButton}
+          >
+            <MdRotateRight style={{ fontSize: "2rem" }} />
+          </div>
+          <div
+            className="button"
+            onClick={() => patchMetadata({ favorite: !imageMetadata.favorite })}
+            style={styles.favoriteButton}
+          >
+            {(imageMetadata.favorite && <BsHeartFill />) || <BsHeart />}
+          </div>
         </div>
-        <div style={{ flexGrow: 1 }} />
-        <div className="button" onClick={onDownload}>
-          <TbDownload
+        <div key={dimensions.width} style={styles.zoomImgWrapper}>
+          <div
             style={{
-              fontSize: "2rem",
-              margin: "0 .25rem .25rem 0"
+              width: "100%",
+              height: 700,
+              display: "flex"
             }}
-          />
-        </div>
-        <div className="button" onClick={onRotateLeft}>
-          <MdRotateLeft style={{ fontSize: "2rem" }} />
-        </div>
-        <div className="button" onClick={onRotateRight}>
-          <MdRotateRight style={{ fontSize: "2rem" }} />
-        </div>
-      </div>
-      <div style={styles.zoomModalOverlay}>
-        <div
-          className="button"
-          onClick={() => patchMetadata({ favorite: !imageMetadata.favorite })}
-          style={styles.favoriteButton}
-        >
-          {(imageMetadata.favorite && <BsHeartFill />) || <BsHeart />}
-        </div>
-        <div
-          key={dimensions.width}
-          ref={wrapperRef}
-          style={styles.zoomImgWrapper}
-        >
-          {positionedTags?.map((item, idx) => (
+          >
             <div
-              className="positionedTag"
-              key={idx}
-              style={{
-                ...styles.positionedTag,
-                top: `${imgRef.current?.height * item.position.x}px`,
-                left: `${imgRef.current?.width * item.position.y - 50}px`
-              }}
+              style={{ position: "relative", display: "flex", margin: "auto" }}
+              ref={refZoomedPanel}
             >
-              <div style={{ margin: "auto" }}>{item.tag}</div>
-            </div>
-          ))}
-          <img
-            alt={unFuck}
-            draggable={false}
-            key={cacheBust}
-            ref={imgRef}
-            onContextMenu={(e) => {
-              const bounds = imgRef.current.getBoundingClientRect();
-              const normalizedPoint = {
-                x: (e.clientY - bounds.top) / imgRef.current.height,
-                y: (e.clientX - bounds.left) / imgRef.current.width
-              };
-              setMouseDownNormalized(normalizedPoint);
-              setMouseDown({ top: e.clientY, left: e.clientX });
-              setShowTagPickerAt(normalizedPoint);
-            }}
-            onClick={(e) => {
-              if (e.clientX < window.innerWidth / 2) {
-                onPrev();
-              } else {
-                onNext();
-              }
-            }}
-            alt={image.data.fileName}
-            style={styles.zoomImg}
-            src={`${imgSrc_preview}?id=${cacheBust}`}
-            onLoad={() => {
-              setUnFuck(Math.random()); //Forces redraw tags
-            }}
-          />
-          {imageMetadata.context && (
-            <div
-              style={{
-                background: "#ffffff99",
-                padding: "1rem",
-                color: "white"
-              }}
-            >
-              <div style={{ color: "white" }}>
-                <div style={{ background: "#ffffff99", padding: "1rem" }}>
-                  <div style={styles.row}>
-                    <div style={styles.rowLabel}>World:</div>
-                    <div>
-                      <a href={imageMetadata.context.world.url} target="_blank">
-                        {imageMetadata.context.world.name}
-                      </a>
-                    </div>
-                  </div>
-                  <div style={styles.row}>
-                    <div style={styles.rowLabel}>Photographer:</div>
-                    <div>
-                      <Tags
-                        onClick={() => patchMetadata({ photographer: "" })}
-                        color="#3f3f3f"
-                        tags={[imageMetadata.photographer]}
-                      />
-                    </div>
-                  </div>
-                  <div style={styles.row}>
-                    <div style={styles.rowLabel}>People:</div>
-                    <div>
-                      <Tags
-                        removable={true}
-                        onAction={(tag) => {
-                          const newPlayerList = [
-                            ...imageMetadata.usrs_in_image
-                          ];
-                          const index = newPlayerList.indexOf(tag);
-                          newPlayerList.splice(index, 1);
-                          patchMetadata({ usrs_in_image: newPlayerList });
-                        }}
-                        color="#3f3f3f"
-                        tags={imageMetadata.usrs_in_image}
-                      />
-                    </div>
-                  </div>
-                  <div style={styles.row}>
-                    <div style={styles.rowLabel}>Tags:</div>
-                    <div>
-                      <input
-                        onChange={(e) =>
-                          patchMetadata({ tags: e.target.value })
-                        }
-                        type="text"
-                        value={imageMetadata.tags ? imageMetadata.tags : ""}
-                      />
-                    </div>
-                  </div>
-                  <div style={styles.row}>
-                    <div style={styles.rowLabel}>Notes:</div>
-                    <div>
-                      <input
-                        onChange={(e) =>
-                          patchMetadata({ notes: e.target.value })
-                        }
-                        type="text"
-                        value={imageMetadata.notes ? imageMetadata.notes : ""}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div style={{ margin: "1rem 0 0 0 " }}>
-                  <div style={{ ...styles.row, maxWidth: "50rem" }}>
-                    <Collapsable
-                      isOpen={false}
-                      title={
-                        <div style={styles.rowLabel}>Players In World</div>
-                      }
-                    >
-                      <div style={{ height: "10rem", overflow: "scroll" }}>
-                        <Tags
-                          actionIcon={<TiUserAdd />}
-                          onAction={(tag) => {
-                            const usrs_in_image = [
-                              ...imageMetadata.usrs_in_image
-                            ];
-                            if (!usrs_in_image.includes(tag))
-                              usrs_in_image.push(tag);
-                            patchMetadata({ usrs_in_image });
-                          }}
-                          color="#757575"
-                          colorSelected="#3f3f3f"
-                          tags={imageMetadata.context.players}
-                          selected={imageMetadata.usrs_in_image}
-                        />
-                      </div>
-                    </Collapsable>
-                  </div>
-                </div>
+              {positionedTags?.map((item, idx) => {
+                let top = imgRef.current?.height * item.position.x;
+                let left = imgRef.current?.clientWidth * item.position.y;
+                left -= 60; //tag width
+                return (
+                  <PositionedTag
+                    key={`pt_${idx}`}
+                    tag={item.tag}
+                    top={top}
+                    left={left}
+                  />
+                );
+              })}
+              <div
+                style={{
+                  margin: "auto",
+                  //height: imgRef.current?.height,
+                  width: "100%"
+                }}
+              >
+                <img
+                  alt={unFuck}
+                  draggable={false}
+                  key={`${image.data.fileName}${cacheBust}`}
+                  ref={imgRef}
+                  onContextMenu={(e) => {
+                    const bounds = imgRef.current?.getBoundingClientRect();
+                    const normalizedPoint = {
+                      x: (e.clientY - bounds.top) / imgRef.current?.height,
+                      y: (e.clientX - bounds.left) / imgRef.current?.width
+                    };
+                    setMouseDownNormalized(normalizedPoint);
+                    setMouseDown({ top: e.clientY, left: e.clientX });
+                    setShowTagPicker(true);
+                  }}
+                  onClick={(e) => {
+                    if (e.clientX < window.innerWidth / 2) {
+                      onPrev();
+                    } else {
+                      onNext();
+                    }
+                  }}
+                  style={styles.zoomImg}
+                  src={`${imgSrc_preview}?id=${cacheBust}`}
+                  onLoad={() => {
+                    setUnFuck(Math.random()); //Forces redraw tags
+                    if (refZoomedPanel.current)
+                      refZoomedPanel.current.style.visibility = "visible";
+                  }}
+                />
               </div>
+            </div>
+          </div>
+          {imageMetadata.context && (
+            <div style={styles.metadataPanel}>
+              <EditableText
+                styles={styles}
+                value={imageMetadata.notes}
+                onChange={(e) => patchMetadata({ notes: e.target.value })}
+              />
+              <Photographer
+                photographer={imageMetadata.photographer}
+                onRemove={() => patchMetadata({ photographer: "" })}
+                onAdd={(e) => {
+                  setShowTagPicker("photographer");
+                  setMouseDown({ top: e.clientY, left: e.clientX });
+                }}
+              />
+              <PeopleInImage
+                onRemove={(tag) => {
+                  const newPlayerList = [...imageMetadata.usrs_in_image];
+                  const index = newPlayerList.indexOf(tag);
+                  newPlayerList.splice(index, 1);
+                  patchMetadata({ usrs_in_image: newPlayerList });
+                }}
+                peopleInWorld={imageMetadata.usrs_in_image}
+              />
+              <EditableTagset
+                styles={styles}
+                tags={imageMetadata.tags}
+                onChange={(e) => patchMetadata({ tags: e.target.value })}
+              />
+
+              <PeopleInWorld
+                people={imageMetadata.context.players}
+                peopleInImage={imageMetadata.usrs_in_image}
+                onAction={(tag) => {
+                  const usrs_in_image = [...imageMetadata.usrs_in_image];
+                  if (!usrs_in_image.includes(tag)) usrs_in_image.push(tag);
+                  patchMetadata({ usrs_in_image });
+                }}
+              />
             </div>
           )}
         </div>
@@ -388,4 +386,4 @@ const Zoomed = ({
     </div>
   );
 };
-export default Zoomed;
+export default React.memo(Zoomed);

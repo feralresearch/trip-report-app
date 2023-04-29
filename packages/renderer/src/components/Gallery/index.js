@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, memo } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { AppContext } from "../../App";
 import { RiFolderDownloadFill } from "react-icons/ri";
@@ -192,4 +192,4 @@ const Gallery = ({ imageContext, screenshots, onExport }) => {
   );
 };
 
-export default Gallery;
+export default React.memo(Gallery);

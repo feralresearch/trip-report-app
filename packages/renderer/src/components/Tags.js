@@ -42,7 +42,9 @@ const Tags = ({
         if (tag?.length > 0)
           return (
             <div
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 if (typeof onClick === "function") onClick(tag);
               }}
               key={idx}
