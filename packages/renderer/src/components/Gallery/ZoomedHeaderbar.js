@@ -2,7 +2,7 @@ import React from "react";
 import styles from "./styles";
 import { MdRotateLeft, MdRotateRight } from "react-icons/md";
 import { TbDownload } from "react-icons/tb";
-import useMousetrap from "react-hook-mousetrap";
+import useMousetrap from "../../modules/react-hook-mousetrap.js";
 
 const ZoomedHeaderbar = ({
   onClose,

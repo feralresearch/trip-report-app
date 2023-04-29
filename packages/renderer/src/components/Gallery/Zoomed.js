@@ -13,7 +13,7 @@ import EditableText from "../EditableText.js";
 import PositionedTag from "./PositionedTag.js";
 import { MdRotateLeft, MdRotateRight } from "react-icons/md";
 import { TbDownload } from "react-icons/tb";
-import useMousetrap from "react-hook-mousetrap";
+import useMousetrap from "../../modules/react-hook-mousetrap.js";
 
 const useOutsideAlerter = (ref, onOutsideClick) => {
   useEffect(() => {
