@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, memo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { DateTime } from "luxon";
 import { v4 as uuidv4 } from "uuid";
 import { BsHeart, BsHeartFill } from "react-icons/bs";
@@ -26,6 +26,42 @@ const useOutsideAlerter = (ref, onOutsideClick) => {
   }, [onOutsideClick, ref]);
 };
 
+const FullZoom = ({ isVisible, isPortrait, src }) => {
+  const imageRef = useRef(null);
+  const [display, setDisplay] = useState(isVisible ? "flex" : "none");
+  useEffect(() => {
+    if (isVisible) {
+      imageRef.current.style.animation = "zoomToLarge .25s";
+      setDisplay("flex");
+    } else {
+      imageRef.current.style.animation = "zoomToSmall .25s";
+      setTimeout(() => setDisplay("none"), 200);
+    }
+  }, [isVisible]);
+  return (
+    <div
+      ref={imageRef}
+      style={{
+        position: "fixed",
+        display,
+        width: "100vw",
+        height: "100vh",
+        zIndex: 5,
+        background: "#000000"
+      }}
+    >
+      <img
+        src={src.replaceAll("preview", "original")}
+        style={
+          isPortrait
+            ? { margin: "auto", width: "100vw", objectFit: "contain" }
+            : { margin: "auto", height: "100vh", objectFit: "contain" }
+        }
+      />
+    </div>
+  );
+};
+
 const Zoomed = ({
   counter,
   image,
@@ -40,17 +76,21 @@ const Zoomed = ({
   const containerRef = useRef(null);
   const imgRef = useRef(null);
   const refZoomedPanel = useRef(null);
+
+  const [fullZoom, setFullZoom] = useState(false);
   const [imageMetadata, setImageMetadata] = useState(null);
   const [showTagPicker, setShowTagPicker] = useState(null);
   const [mouseDown, setMouseDown] = useState({ top: 0, left: 0 });
   const [mouseDownNormalized, setMouseDownNormalized] = useState();
-  const [unFuck, setUnFuck] = useState(Math.random());
+  const [, updateState] = React.useState();
+  const forceUpdate = React.useCallback(() => updateState({}), []);
   const [dimensions, setDimensions] = React.useState({
     height: window.innerHeight,
     width: window.innerWidth
   });
 
   const onDownload = () => window.databaseAPI.exportAsset(image?.data.fileName);
+  useMousetrap("space", () => setFullZoom(!fullZoom), "keyup");
   useMousetrap("esc", onOutsideClick, "keyup");
   useMousetrap("right", onNext, "keyup");
   useMousetrap("left", onPrev, "keyup");
@@ -62,19 +102,6 @@ const Zoomed = ({
     () => patchMetadata({ favorite: !imageMetadata.favorite }),
     "keyup"
   );
-
-  // Redraw tags on resize
-  useEffect(() => {
-    const handleResize = () => {
-      setDimensions({
-        height: window.innerHeight,
-        width: window.innerWidth
-      });
-      setUnFuck(() => Math.random());
-    };
-    window.addEventListener("resize", handleResize);
-    return window.removeEventListener("resize", handleResize);
-  });
 
   // Update metadata (localstate and db)
   const patchMetadata = (patch, updateDb = true) => {
@@ -110,18 +137,19 @@ const Zoomed = ({
         }
       };
       getMetadata();
+      forceUpdate();
     }
   }, [image]);
 
   // On Outside Click
   useOutsideAlerter(containerRef, (e) => {
-    console.log("Hi");
     if (showTagPicker) return;
     if (e.target.className !== "button") onOutsideClick();
   });
 
   // Rotation handler
   const rotate = (deg) => {
+    if (fullZoom) return;
     if (refZoomedPanel.current)
       refZoomedPanel.current.style.visibility = "hidden";
     const rotateCoordinates = (coordinates, degrees) => {
@@ -186,6 +214,11 @@ const Zoomed = ({
   if (!imageMetadata) return null;
   return (
     <div style={styles.zoomContainer}>
+      <FullZoom
+        isVisible={fullZoom}
+        isPortrait={imgRef.current?.clientWidth > imgRef.current?.clientHeight}
+        src={`${imgSrc_preview}?id=${cacheBust}`}
+      />
       {showTagPicker && (
         <TagPicker
           top={mouseDown.top}
@@ -303,15 +336,13 @@ const Zoomed = ({
               <div
                 style={{
                   margin: "auto",
-                  //height: imgRef.current?.height,
                   width: "100%"
                 }}
               >
                 <img
-                  alt={unFuck}
+                  ref={imgRef}
                   draggable={false}
                   key={`${image.data.fileName}${cacheBust}`}
-                  ref={imgRef}
                   onContextMenu={(e) => {
                     const bounds = imgRef.current?.getBoundingClientRect();
                     const normalizedPoint = {
@@ -332,7 +363,7 @@ const Zoomed = ({
                   style={styles.zoomImg}
                   src={`${imgSrc_preview}?id=${cacheBust}`}
                   onLoad={() => {
-                    setUnFuck(Math.random()); //Forces redraw tags
+                    forceUpdate();
                     if (refZoomedPanel.current)
                       refZoomedPanel.current.style.visibility = "visible";
                   }}

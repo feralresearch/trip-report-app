@@ -87,11 +87,10 @@ const Gallery = ({ imageContext, screenshots, onExport }) => {
       title={
         <div
           style={{
-            minWidth: "calc(100vw - 25.4rem)",
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            background: "#dddddd",
+
             borderRadius: "0.3rem",
             padding: "0 .25rem",
             height: "3rem"
@@ -102,26 +101,6 @@ const Gallery = ({ imageContext, screenshots, onExport }) => {
             {favorites.length} favorite{favorites.length != 1 && "s"}
           </div>
           <div style={{ flexGrow: 1 }} />
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center"
-            }}
-          >
-            <div
-              onClick={onToggleFavorites}
-              style={{
-                marginRight: ".5rem",
-                opacity: filterOnFavorites > 0 ? 1 : 0.2
-              }}
-            >
-              {(filterOnFavorites === 2 && <BsHeartFill />) || <BsHeart />}
-            </div>
-            <div onClick={onExport}>
-              <RiFolderDownloadFill style={{ fontSize: "1.5rem" }} />
-            </div>
-          </div>
         </div>
       }
     >
@@ -144,6 +123,36 @@ const Gallery = ({ imageContext, screenshots, onExport }) => {
         />
 
         <div style={styles.gallery}>
+          <div style={{ width: "100vw" }}>
+            <div
+              style={{
+                position: "relative",
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center"
+              }}
+            >
+              <div
+                onClick={onToggleFavorites}
+                style={{
+                  margin: "0 .5rem 0 .2rem",
+                  fontSize: "1.5rem",
+                  opacity: filterOnFavorites > 0 ? 1 : 0.2
+                }}
+              >
+                {(filterOnFavorites === 2 && <BsHeartFill />) || <BsHeart />}
+              </div>
+              <div
+                onClick={onExport}
+                style={{
+                  margin: "-.2rem .5rem 0 .2rem",
+                  fontSize: "1.8rem"
+                }}
+              >
+                <RiFolderDownloadFill />
+              </div>
+            </div>
+          </div>
           {screenshotList.map((image, idx) => {
             if (
               favorites.find((item) => item.fileName === image.data.fileName)

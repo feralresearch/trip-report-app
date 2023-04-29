@@ -55,3 +55,24 @@ td {
     opacity: 1;
   }
 }
+
+@keyframes zoomToLarge {
+  from {
+    scale: 0.25;
+    opacity: 0;
+  }
+  to {
+    scale: 1;
+    opacity: 1;
+  }
+}
+@keyframes zoomToSmall {
+  to {
+    scale: 0.25;
+    opacity: 0;
+  }
+  from {
+    scale: 1;
+    opacity: 1;
+  }
+}

@@ -49,7 +49,7 @@ const Instance = () => {
 
   if (!info) return null;
   return (
-    <div>
+    <div style={{ margin: "1.5rem" }}>
       <div>
         <h2>{info.name}</h2>
       </div>

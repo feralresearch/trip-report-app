@@ -1,5 +1,4 @@
 import { TiUserAdd } from "react-icons/ti";
-import Collapsable from "../Collapsable/index.js";
 import styles from "./styles";
 import Tags from "../Tags.js";
 
