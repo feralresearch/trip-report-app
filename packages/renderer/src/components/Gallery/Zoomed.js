@@ -84,10 +84,6 @@ const Zoomed = ({
   const [mouseDownNormalized, setMouseDownNormalized] = useState();
   const [, updateState] = React.useState();
   const forceUpdate = React.useCallback(() => updateState({}), []);
-  const [dimensions, setDimensions] = React.useState({
-    height: window.innerHeight,
-    width: window.innerWidth
-  });
 
   const onDownload = () => window.databaseAPI.exportAsset(image?.data.fileName);
   useMousetrap("space", () => setFullZoom(!fullZoom), "keyup");
@@ -308,7 +304,7 @@ const Zoomed = ({
             {(imageMetadata.favorite && <BsHeartFill />) || <BsHeart />}
           </div>
         </div>
-        <div key={dimensions.width} style={styles.zoomImgWrapper}>
+        <div style={styles.zoomImgWrapper}>
           <div
             style={{
               width: "100%",

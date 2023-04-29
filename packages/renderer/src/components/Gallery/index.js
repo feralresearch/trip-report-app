@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, memo } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { AppContext } from "../../App";
 import { RiFolderDownloadFill } from "react-icons/ri";

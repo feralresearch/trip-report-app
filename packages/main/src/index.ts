@@ -12,7 +12,6 @@ import "./security-restrictions";
 import { restoreOrCreateWindow } from "/@/mainWindow";
 import {
   ACTIONS,
-  update,
   upsert,
   read,
   destroy
