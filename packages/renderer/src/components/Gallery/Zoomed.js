@@ -234,7 +234,8 @@ const Zoomed = ({
             }
           }}
           onOutsideClick={() => setShowTagPicker(null)}
-          imageMetadata={imageMetadata}
+          tags={imageMetadata.context.players}
+          selected={imageMetadata.usrs_in_image}
         />
       )}
 

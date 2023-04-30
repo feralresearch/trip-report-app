@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Tags from "../Tags.js";
 import { TiUserAdd } from "react-icons/ti";
 
@@ -13,13 +13,25 @@ const useOutsideAlerter = (ref, onOutsideClick) => {
   }, [onOutsideClick, ref]);
 };
 
-const TagPicker = ({ onSelect, top, left, imageMetadata, onOutsideClick }) => {
+const TagPicker = ({ tags, selected, onSelect, top, left, onOutsideClick }) => {
   // On Outside Click
   const wrapperRef = useRef(null);
+  const [filter, _setFilter] = useState("");
+  const [tagList, setTagList] = useState(tags);
+
+  const setFilter = (val) => {
+    if (val.length == 0) {
+      setTagList(tags);
+    } else {
+      setTagList(tagList.filter((tag) => tag.toLowerCase().match(val)));
+    }
+    return _setFilter(val);
+  };
+
   useOutsideAlerter(wrapperRef, (e) => {
     if (e.target.className !== "button") onOutsideClick(e);
   });
-  const width = 300;
+  const width = 200;
   return (
     <div
       ref={wrapperRef}
@@ -30,6 +42,7 @@ const TagPicker = ({ onSelect, top, left, imageMetadata, onOutsideClick }) => {
         position: "fixed",
         background: "white",
         maxWidth: `${width}px`,
+        width: `${width}px`,
         overflow: "hidden",
         height: "10rem",
         display: "flex",
@@ -39,18 +52,29 @@ const TagPicker = ({ onSelect, top, left, imageMetadata, onOutsideClick }) => {
         boxShadow: "rgb(0 0 0 / 30%) -3px 6px 7px 2px"
       }}
     >
-      <div style={{ height: "100%" }}>
+      <div style={{ height: "100%", position: "relative" }}>
         <div
           style={{
-            width: "100%",
+            width: `${width}px`,
             fontWeight: 900
           }}
         >
-          People <input type="text" />
+          <input
+            type="text"
+            onChange={(e) => setFilter(e.target.value)}
+            value={filter ? filter : ""}
+            style={{
+              width: `${width}px`,
+              border: 0,
+              fontSize: "1rem",
+              fontWeight: 900
+            }}
+          />
         </div>
         <div>
           <div
             style={{
+              width: `${width}px`,
               overflow: "scroll",
               height: "6rem",
               background: "#eeeeee",
@@ -65,8 +89,8 @@ const TagPicker = ({ onSelect, top, left, imageMetadata, onOutsideClick }) => {
               }}
               color="#757575"
               colorSelected="#3f3f3f"
-              tags={imageMetadata.context.players}
-              selected={imageMetadata.usrs_in_image}
+              tags={tagList}
+              selected={selected}
             />
           </div>
         </div>
