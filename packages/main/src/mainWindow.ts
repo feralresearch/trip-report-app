@@ -14,7 +14,11 @@ async function createWindow() {
     "VRChat"
   );
   const vrcScreenshotDir = path.join(app.getPath("home"), "Pictures", "VRChat");
-  const preferences = await prefs.load({prefsFile, vrcLogDir, vrcScreenshotDir});
+  const preferences = await prefs.load({
+    prefsFile,
+    vrcLogDir,
+    vrcScreenshotDir
+  });
   const browserWindow = new BrowserWindow({
     width: 1024,
     height: 1024,
