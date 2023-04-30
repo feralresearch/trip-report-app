@@ -26,7 +26,7 @@ if (!prefsFile) {
   process.exit();
 }
 const updateProgress = (val) => process.send(val);
-const preferences = await prefs.load(prefsFile);
+const preferences = await prefs.load({ prefsFile });
 const knex = knexInit({ pathToDatabase: preferences.dataDir });
 const logEntries = await knex
   .select("*")
