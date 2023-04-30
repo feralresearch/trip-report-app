@@ -468,14 +468,6 @@ prefs
           });
         });
 
-<<<<<<< HEAD
-        return data.map((item: { usrs_in_image: string; tags: string }) => ({
-          ...item,
-          usrs_in_image: attemptParse(item.usrs_in_image),
-          tags: attemptParse(item.tags)
-        }));
-      });
-=======
         ipcMain.handle(ACTIONS.MEDIA_GET, async (_event, media_id) => {
           return read({
             knex,
@@ -484,7 +476,6 @@ prefs
             id: media_id
           });
         });
->>>>>>> 36b3621e39b70d775a28bd873162949705cbd050
 
         ipcMain.handle(ACTIONS.MEDIA_DELETE, async (_event, media_id) => {
           return destroy({
