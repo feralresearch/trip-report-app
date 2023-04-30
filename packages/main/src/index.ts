@@ -509,7 +509,7 @@ prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir)?.then((preferences) => {
           orderBy: "id"
         });
 
-        return data.map((item) => ({
+        return data.map((item: { usrs_in_image: string; tags: string }) => ({
           ...item,
           usrs_in_image: attemptParse(item.usrs_in_image),
           tags: attemptParse(item.tags)
