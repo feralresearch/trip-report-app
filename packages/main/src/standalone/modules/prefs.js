@@ -2,12 +2,13 @@ import fs from "fs";
 import { resolve } from "path";
 import os from "os";
 const isWin = os.platform() === "win32";
+import path from "path";
 
 const prefs = {
   default: (overrides = {}) => {
     //const userData = app.getPath("userData");
     let defaults = {
-      dataDir: "", //path.join(prefsFile.replace("config.json", ""), "Data"),
+      dataDir: "",
       openAtLogin: false,
       showInTaskbar: false,
       vrcProcessName: "",
@@ -33,35 +34,51 @@ const prefs = {
     }
     return defaults;
   },
-  load: (pathToPrefs = "", vrcLogDir, vrcScreenshotDir) => {
-    if (pathToPrefs === "") return;
+  load: ({ prefsFile = "", vrcLogDir, vrcScreenshotDir }) => {
+    if (prefsFile === "") return;
     return new Promise((resolve) => {
-      return fs.readFile(pathToPrefs, "utf-8", async (err, data) => {
+      return fs.readFile(prefsFile, "utf-8", async (err, data) => {
         if (err) {
-          console.log(`WARN: Writing defaults to ${pathToPrefs}`);
-          await prefs.save(prefs.default({ vrcLogDir, vrcScreenshotDir }));
+          console.log(`WARN: Writing defaults to ${prefsFile}`);
+          await prefs.save(
+            prefs.default({
+              dataDir: path.join(prefsFile.replace("config.json", ""), "Data"),
+              vrcLogDir,
+              vrcScreenshotDir
+            })
+          );
         }
         resolve(
           err
-            ? prefs.default({ vrcLogDir, vrcScreenshotDir })
-            : JSON.parse(data)
+            ? prefs.default({
+                dataDir: path.join(
+                  prefsFile.replace("config.json", ""),
+                  "Data"
+                ),
+                vrcLogDir,
+                vrcScreenshotDir
+              })
+            : data
+            ? JSON.parse(data)
+            : ""
         );
       });
     });
   },
   update: async (params) => {
     const { prefsFile, partialPrefs, vrcLogDir, vrcScreenshotDir } = params;
-    const currentPreferences = await prefs.load(
+    const currentPreferences = await prefs.load({
       prefsFile,
       vrcLogDir,
       vrcScreenshotDir
-    );
+    });
     Object.keys(partialPrefs).forEach(
       (key) => (currentPreferences[key] = partialPrefs[key])
     );
     await prefs.save(prefsFile, { ...currentPreferences });
   },
   save: async (prefsFile, data) => {
+    if (!data) return;
     fs.writeFileSync(prefsFile, JSON.stringify(data));
     resolve();
   }

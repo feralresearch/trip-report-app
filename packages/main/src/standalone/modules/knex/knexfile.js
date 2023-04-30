@@ -7,8 +7,9 @@ asar.addAsarToLookupPaths();
 
 export const knexInit = ({ pathToDatabase, pathToMigrations, pathToSeeds }) => {
   if (!pathToDatabase) {
-    console.error("ERROR: Cannot initialize knex without a database");
-    return;
+    console.error("*** ERROR: Cannot initialize knex without a database");
+    console.error({ pathToDatabase, pathToMigrations, pathToSeeds });
+    process.exit(1);
   }
   makeDir(pathToDatabase);
   const filename = path.join(pathToDatabase, "database.db");

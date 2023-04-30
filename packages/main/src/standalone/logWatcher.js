@@ -23,7 +23,11 @@ if (!prefsFile) {
   onLog("FATAL: Please provide path to preferences file");
   process.exit();
 }
-const preferences = await prefs.load(prefsFile, vrcLogDir, vrcScreenshotDir);
+const preferences = await prefs.load({
+  prefsFile,
+  vrcLogDir,
+  vrcScreenshotDir
+});
 const isWin = os.platform() === "win32";
 
 onLog(

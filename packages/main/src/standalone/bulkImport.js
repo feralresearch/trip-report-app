@@ -9,7 +9,7 @@ import { ACTIONS, ipcSend } from "../modules/actions.js";
 import { exit } from "process";
 
 const prefsFile = process.argv[2];
-let preferences = await prefs.load(prefsFile);
+let preferences = await prefs.load({ prefsFile });
 preferences = {
   ...preferences,
   vrcScreenshotDir: process.argv[4],
